@@ -3,9 +3,8 @@ package main
 import (
 	"flag"
 
-	"github.com/ribice/gorsk/pkg/api"
-
-	"github.com/ribice/gorsk/pkg/utl/config"
+	"github.com/sappy5678/cryptocom/pkg/service"
+	"github.com/sappy5678/cryptocom/pkg/utl/config"
 )
 
 func main() {
@@ -16,7 +15,7 @@ func main() {
 	cfg, err := config.Load(*cfgPath)
 	checkErr(err)
 
-	checkErr(api.Start(cfg))
+	checkErr(service.Start(cfg))
 }
 
 func checkErr(err error) {

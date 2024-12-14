@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ribice/gorsk"
-	"github.com/ribice/gorsk/pkg/utl/secure"
+	"github.com/sappy5678/cryptocom"
+	"github.com/sappy5678/cryptocom/pkg/utl/secure"
 
 	"github.com/go-pg/pg/v9"
 	"github.com/go-pg/pg/v9/orm"
@@ -29,7 +29,7 @@ func main() {
 	db := pg.Connect(u)
 	_, err = db.Exec("SELECT 1")
 	checkErr(err)
-	createSchema(db, &gorsk.Company{}, &gorsk.Location{}, &gorsk.Role{}, &gorsk.User{})
+	createSchema(db, &cryptocom.Company{}, &cryptocom.Location{}, &cryptocom.Role{}, &cryptocom.User{})
 
 	for _, v := range queries[0 : len(queries)-1] {
 		_, err := db.Exec(v)
