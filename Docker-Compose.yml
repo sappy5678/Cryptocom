@@ -1,7 +1,7 @@
 services:
   api:
     environment:
-      - DATABASE_URL=postgres://postgres:password@sql:5432/postgres?sslmode=disable
+      - DATABASE_URL=postgres://postgres:password@sql:5432/cryptocom?sslmode=disable
       - JWT_SECRET=jwt_secret
     build:
       context: .
@@ -9,15 +9,31 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - sql
-      - redis
-    
+      sql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      sql_migrations:
+        condition: service_completed_successfully
+  sql_migrations:
+    build:
+      context: .
+      dockerfile: deploy/db/Dockerfile
+    depends_on:
+      sql:
+        condition: service_healthy
   sql:
     image: postgres:17.2
-    environment:
-      - POSTGRES_PASSWORD=password
     ports:
       - "5432:5432"
+    environment:
+      # - POSTGRES_HOST_AUTH_METHOD=trust
+      - POSTGRES_PASSWORD=password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
    
   redis:
     image: redis:7.4

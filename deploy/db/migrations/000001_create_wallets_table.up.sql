@@ -1,0 +1,30 @@
+-- BEGIN;
+-- DROP DATABASE IF EXISTS Cryptocom;
+-- COMMIT;
+
+-- BEGIN;  
+-- CREATE DATABASE Cryptocom;
+-- COMMIT;
+
+-- 
+-- SET DATABASE = Cryptocom;
+BEGIN;
+CREATE TABLE IF NOT EXISTS UserWallet (
+    ID BIGSERIAL PRIMARY KEY,
+    userID CHAR(32) NOT NULL,
+    createdAt TIMESTAMP NOT NULL DEFAULT NOW(),
+    updatedAt TIMESTAMP NOT NULL DEFAULT NOW(),
+    deletedAt TIMESTAMP,
+    balance BIGINT NOT NULL DEFAULT 0 -- 1 dollor will be 10*6
+);
+
+CREATE TABLE IF NOT EXISTS UserWalletTransaction (
+    ID BIGSERIAL PRIMARY KEY,
+    userID CHAR(32) NOT NULL,
+    operationType INT NOT NULL,
+    walletID BIGINT NOT NULL,
+    passiveWalletID BIGINT,
+    amount BIGINT NOT NULL,
+    createdAt TIMESTAMP NOT NULL DEFAULT NOW()
+);
+COMMIT;
