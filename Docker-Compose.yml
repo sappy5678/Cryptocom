@@ -1,0 +1,26 @@
+services:
+  api:
+    environment:
+      - DATABASE_URL=postgres://postgres:password@sql:5432/postgres?sslmode=disable
+      - JWT_SECRET=jwt_secret
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - sql
+      - redis
+    
+  sql:
+    image: postgres:17.2
+    environment:
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+   
+  redis:
+    image: redis:7.4
+    ports:
+      - "6379:6379"
+    
