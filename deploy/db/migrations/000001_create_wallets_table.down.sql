@@ -1,6 +1,6 @@
 BEGIN;
-DROP TABLE UserWalletTransaction;
-DROP TABLE UserWallet;
+DROP TABLE WalletTransaction;
+DROP TABLE Wallet;
 COMMIT;
 
 -- BEGIN;

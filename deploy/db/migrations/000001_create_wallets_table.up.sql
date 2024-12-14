@@ -9,16 +9,15 @@
 -- 
 -- SET DATABASE = Cryptocom;
 BEGIN;
-CREATE TABLE IF NOT EXISTS UserWallet (
+CREATE TABLE IF NOT EXISTS Wallet (
     ID BIGSERIAL PRIMARY KEY,
     userID CHAR(32) NOT NULL,
     createdAt TIMESTAMP NOT NULL DEFAULT NOW(),
     updatedAt TIMESTAMP NOT NULL DEFAULT NOW(),
-    deletedAt TIMESTAMP,
     balance BIGINT NOT NULL DEFAULT 0 -- 1 dollor will be 10*6
 );
 
-CREATE TABLE IF NOT EXISTS UserWalletTransaction (
+CREATE TABLE IF NOT EXISTS WalletTransaction (
     ID BIGSERIAL PRIMARY KEY,
     userID CHAR(32) NOT NULL,
     operationType INT NOT NULL,

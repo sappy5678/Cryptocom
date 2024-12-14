@@ -2,9 +2,9 @@
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
 
-// GORSK - Go(lang) restful starter kit
+// cryptocom - Go(lang) restful starter kit
 //
-// API Docs for GORSK v1
+// API Docs for cryptocom v1
 //
 //		 Terms Of Service:  N/A
 //	    Schemes: http
@@ -32,11 +32,17 @@
 package api
 
 import (
+	"net/http"
 	"os"
 
-	"github.com/ribice/gorsk/pkg/utl/config"
-	"github.com/ribice/gorsk/pkg/utl/postgres"
-	"github.com/ribice/gorsk/pkg/utl/server"
+	"github.com/labstack/echo"
+	"github.com/sappy5678/cryptocom/pkg/api/wallet"
+	wl "github.com/sappy5678/cryptocom/pkg/api/wallet/logging"
+	wt "github.com/sappy5678/cryptocom/pkg/api/wallet/transport"
+	"github.com/sappy5678/cryptocom/pkg/utl/config"
+	"github.com/sappy5678/cryptocom/pkg/utl/postgres"
+	"github.com/sappy5678/cryptocom/pkg/utl/server"
+	"github.com/sappy5678/cryptocom/pkg/utl/zlog"
 )
 
 // Start starts the API service
@@ -46,9 +52,16 @@ func Start(cfg *config.Configuration) error {
 		return err
 	}
 
+	log := zlog.New()
+
 	e := server.New()
 	e.Static("/swaggerui", cfg.App.SwaggerUIPath)
+	v1 := e.Group("/v1")
+	wt.NewHTTP(wl.New(&wallet.User{}, log), v1)
 
+	v1.GET("/health", func(c echo.Context) error {
+		return c.NoContent(http.StatusOK)
+	})
 	server.Start(e, &server.Config{
 		Port:                cfg.Server.Port,
 		ReadTimeoutSeconds:  cfg.Server.ReadTimeout,
