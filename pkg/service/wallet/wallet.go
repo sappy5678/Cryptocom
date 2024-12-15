@@ -4,6 +4,7 @@ package wallet
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/sappy5678/cryptocom/pkg/domain"
 )
 
@@ -24,16 +25,27 @@ func (w Wallet) Get(ctx context.Context, user domain.User) (*domain.Wallet, erro
 	return wallet, nil
 }
 
-func (w Wallet) Withdraw(ctx context.Context, user domain.User, amount int) (*domain.Wallet, error) {
-	wallet, err := w.walletRepo.Withdraw(ctx, w.db, user, amount)
+func (w Wallet) CreateTransactionID(ctx context.Context) domain.TransactionID {
+	uuid := uuid.New()
+	return domain.TransactionID(uuid.String())
+}
+
+func (w Wallet) Withdraw(ctx context.Context, user domain.User, transactionID domain.TransactionID, amount int) (*domain.Wallet, error) {
+	if amount <= 0 {
+		return nil, domain.ErrInvalidAmount
+	}
+	wallet, err := w.walletRepo.Withdraw(ctx, w.db, user, transactionID, amount)
 	if err != nil {
 		return nil, err
 	}
 	return wallet, nil
 }
 
-func (w Wallet) Deposit(ctx context.Context, user domain.User, amount int) (*domain.Wallet, error) {
-	wallet, err := w.walletRepo.Deposit(ctx, w.db, user, amount)
+func (w Wallet) Deposit(ctx context.Context, user domain.User, transactionID domain.TransactionID, amount int) (*domain.Wallet, error) {
+	if amount <= 0 {
+		return nil, domain.ErrInvalidAmount
+	}
+	wallet, err := w.walletRepo.Deposit(ctx, w.db, user, transactionID, amount)
 	if err != nil {
 		return nil, err
 	}
@@ -48,8 +60,11 @@ func (w Wallet) GetTransactions(ctx context.Context, user domain.User) ([]*domai
 	return transactions, nil
 }
 
-func (w Wallet) Transfer(ctx context.Context, user domain.User, amount int, passiveUser domain.User) (*domain.Wallet, error) {
-	wallet, err := w.walletRepo.Transfer(ctx, w.db, user, amount, passiveUser)
+func (w Wallet) Transfer(ctx context.Context, user domain.User, transactionID domain.TransactionID, amount int, passiveUser domain.User) (*domain.Wallet, error) {
+	if amount <= 0 {
+		return nil, domain.ErrInvalidAmount
+	}
+	wallet, err := w.walletRepo.Transfer(ctx, w.db, user, transactionID, amount, passiveUser)
 	if err != nil {
 		return nil, err
 	}

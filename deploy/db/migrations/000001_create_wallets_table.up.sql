@@ -11,8 +11,9 @@ CREATE TABLE IF NOT EXISTS UserWallet (
 CREATE TABLE IF NOT EXISTS UserWalletTransaction (
     ID BIGSERIAL PRIMARY KEY,
     userID CHAR(36) NOT NULL,
+    transactionID VARCHAR(60) UNIQUE NOT NULL,
     operationType INT NOT NULL,
-    passiveUserID CHAR(36),
+    passiveUserID VARCHAR(36),
     amount BIGINT NOT NULL,
     createdAt TIMESTAMP NOT NULL DEFAULT NOW()
 );

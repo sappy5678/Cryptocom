@@ -47,9 +47,9 @@ func (w Wallet) Get(ctx context.Context, db *sqlx.DB, user domain.User) (*domain
 }
 
 const depositQuery = `UPDATE UserWallet SET balance = balance + $2 WHERE userID = $1 RETURNING userID, balance`
-const insertTransactionQuery = `INSERT INTO UserWalletTransaction (userID, operationType, amount, passiveUserID) VALUES ($1, $2, $3, $4)`
+const insertTransactionQuery = `INSERT INTO UserWalletTransaction (userID, transactionID, operationType, amount, passiveUserID) VALUES ($1, $2, $3, $4, $5)`
 
-func (w Wallet) Deposit(ctx context.Context, db *sqlx.DB, user domain.User, amount int) (*domain.Wallet, error) {
+func (w Wallet) Deposit(ctx context.Context, db *sqlx.DB, user domain.User, transactionID domain.TransactionID, amount int) (*domain.Wallet, error) {
 	tx, err := db.BeginTxx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -65,7 +65,7 @@ func (w Wallet) Deposit(ctx context.Context, db *sqlx.DB, user domain.User, amou
 
 	var wallet domain.Wallet
 	if !rows.Next() {
-		return nil, ErrNotFound
+		return nil, domain.ErrNotFound
 	}
 	if err := rows.StructScan(&wallet); err != nil {
 		return nil, err
@@ -73,7 +73,7 @@ func (w Wallet) Deposit(ctx context.Context, db *sqlx.DB, user domain.User, amou
 	rows.Close()
 
 	// insert transaction
-	_, err = tx.ExecContext(ctx, insertTransactionQuery, user.ID, domain.OperationTypeDeposit, amount, "")
+	_, err = tx.ExecContext(ctx, insertTransactionQuery, user.ID, transactionID.ID(), domain.OperationTypeDeposit, amount, "")
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,8 @@ func (w Wallet) Deposit(ctx context.Context, db *sqlx.DB, user domain.User, amou
 
 const withdrawQuery = `UPDATE UserWallet SET balance = balance - $2 WHERE userID = $1 AND balance >= $2 RETURNING userID, balance`
 
-func (w Wallet) Withdraw(ctx context.Context, db *sqlx.DB, user domain.User, amount int) (*domain.Wallet, error) {
+func (w Wallet) Withdraw(ctx context.Context, db *sqlx.DB, user domain.User, transactionID domain.TransactionID, amount int) (*domain.Wallet, error) {
+
 	tx, err := db.BeginTxx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -102,7 +103,7 @@ func (w Wallet) Withdraw(ctx context.Context, db *sqlx.DB, user domain.User, amo
 
 	var wallet domain.Wallet
 	if !rows.Next() {
-		return nil, ErrInsufficientBalance
+		return nil, domain.ErrInsufficientBalance
 	}
 	if err := rows.StructScan(&wallet); err != nil {
 		return nil, err
@@ -110,7 +111,7 @@ func (w Wallet) Withdraw(ctx context.Context, db *sqlx.DB, user domain.User, amo
 	rows.Close()
 
 	// insert transaction
-	_, err = tx.ExecContext(ctx, insertTransactionQuery, user.ID, domain.OperationTypeWithdraw, amount, "")
+	_, err = tx.ExecContext(ctx, insertTransactionQuery, user.ID, transactionID.ID(), domain.OperationTypeWithdraw, amount, "")
 	if err != nil {
 		return nil, err
 	}
@@ -124,9 +125,9 @@ func (w Wallet) Withdraw(ctx context.Context, db *sqlx.DB, user domain.User, amo
 
 const transferQuery = `UPDATE UserWallet SET balance = balance - $2 WHERE userID = $1 AND balance >= $2 RETURNING userID, balance`
 const passiveTransferQuery = `UPDATE UserWallet SET balance = balance + $2 WHERE userID = $1`
-const insertTransferTransactionQuery = `INSERT INTO UserWalletTransaction (userID, operationType, amount, passiveUserID) VALUES ($1, $2, $3, $4)`
+const insertTransferTransactionQuery = `INSERT INTO UserWalletTransaction (userID, transactionID, operationType, amount, passiveUserID) VALUES ($1, $2, $3, $4, $5)`
 
-func (w Wallet) Transfer(ctx context.Context, db *sqlx.DB, user domain.User, amount int, passiveUser domain.User) (*domain.Wallet, error) {
+func (w Wallet) Transfer(ctx context.Context, db *sqlx.DB, user domain.User, transactionID domain.TransactionID, amount int, passiveUser domain.User) (*domain.Wallet, error) {
 	tx, err := db.BeginTxx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -139,7 +140,7 @@ func (w Wallet) Transfer(ctx context.Context, db *sqlx.DB, user domain.User, amo
 		return nil, err
 	}
 	if !rows.Next() {
-		return nil, ErrInsufficientBalance
+		return nil, domain.ErrInsufficientBalance
 	}
 	var wallet domain.Wallet
 	if err := rows.StructScan(&wallet); err != nil {
@@ -156,17 +157,17 @@ func (w Wallet) Transfer(ctx context.Context, db *sqlx.DB, user domain.User, amo
 		if err != nil {
 			return nil, err
 		}
-		return nil, ErrNotFound
+		return nil, domain.ErrNotFound
 	}
 
 	// insert transaction
-	_, err = tx.ExecContext(ctx, insertTransferTransactionQuery, user.ID, domain.OperationTypeTransferOut, amount, passiveUser.ID)
+	_, err = tx.ExecContext(ctx, insertTransferTransactionQuery, user.ID, transactionID.ID(), domain.OperationTypeTransferOut, amount, passiveUser.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	// insert passive transaction
-	_, err = tx.ExecContext(ctx, insertTransferTransactionQuery, passiveUser.ID, domain.OperationTypeTransferIn, amount, user.ID)
+	_, err = tx.ExecContext(ctx, insertTransferTransactionQuery, passiveUser.ID, transactionID.PassiveID(), domain.OperationTypeTransferIn, amount, user.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +178,7 @@ func (w Wallet) Transfer(ctx context.Context, db *sqlx.DB, user domain.User, amo
 	return &wallet, nil
 }
 
-const getTransactionsQuery = `SELECT ID, userID, operationType, amount, passiveUserID, createdAt FROM UserWalletTransaction WHERE userID=$1`
+const getTransactionsQuery = `SELECT ID, userID, transactionID, operationType, amount, passiveUserID, createdAt FROM UserWalletTransaction WHERE userID=$1`
 
 func (w Wallet) GetTransactions(ctx context.Context, db *sqlx.DB, user domain.User) ([]*domain.Transaction, error) {
 	transactions := []*domain.Transaction{}

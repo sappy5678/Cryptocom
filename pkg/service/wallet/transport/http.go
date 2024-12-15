@@ -29,6 +29,8 @@ func NewHTTP(svc domain.WalletService, r *echo.Group) {
 
 	ur.GET("", h.get)
 
+	ur.POST("/transactionID", h.createTransactionID)
+
 	ur.POST("/deposit", h.deposit)
 	ur.POST("/withdraw", h.withdraw)
 	ur.GET("/transactions", h.getTransactions)
@@ -76,33 +78,47 @@ func (h HTTP) get(c echo.Context) error {
 	return c.JSON(http.StatusOK, wallet)
 }
 
+type createTransactionIDResp struct {
+	TransactionID domain.TransactionID `json:"transactionID"`
+}
+
+func (h HTTP) createTransactionID(c echo.Context) error {
+	transactionID := h.svc.CreateTransactionID(c.Request().Context())
+	return c.JSON(http.StatusOK, createTransactionIDResp{TransactionID: transactionID})
+}
+
 type depositReq struct {
-	UserID string
-	Amount int `json:"amount" validate:"required,gt=0"`
+	UserID        string
+	TransactionID string `json:"transactionID" validate:"required"`
+	Amount        int    `json:"amount" validate:"required,gt=0"`
 }
 
 func (h HTTP) deposit(c echo.Context) error {
 	r := depositReq{}
 	if err := c.Bind(&r); err != nil {
+		c.Logger().Error(err)
 		return c.NoContent(http.StatusBadRequest)
 	}
 	userID := c.Param("userID")
 	if userID == "" {
+		c.Logger().Error("userID is required")
 		return c.NoContent(http.StatusBadRequest)
 	}
 	r.UserID = userID
 	wallet, err := h.svc.Deposit(c.Request().Context(), domain.User{
 		ID: r.UserID,
-	}, r.Amount)
+	}, domain.TransactionID(r.TransactionID), r.Amount)
 	if err != nil {
+		c.Logger().Error(err)
 		return err
 	}
 	return c.JSON(http.StatusOK, wallet)
 }
 
 type withdrawReq struct {
-	UserID string
-	Amount int `json:"amount" validate:"required,gt=0"`
+	UserID        string
+	TransactionID string `json:"transactionID" validate:"required"`
+	Amount        int    `json:"amount" validate:"required,gt=0"`
 }
 
 func (h HTTP) withdraw(c echo.Context) error {
@@ -117,7 +133,7 @@ func (h HTTP) withdraw(c echo.Context) error {
 	r.UserID = userID
 	wallet, err := h.svc.Withdraw(c.Request().Context(), domain.User{
 		ID: r.UserID,
-	}, r.Amount)
+	}, domain.TransactionID(r.TransactionID), r.Amount)
 	if err != nil {
 		return err
 	}
@@ -148,6 +164,7 @@ type transferReq struct {
 	UserID        string
 	PassiveUserID string `json:"passiveUserID" validate:"required"`
 	Amount        int    `json:"amount" validate:"required,gt=0"`
+	TransactionID string `json:"transactionID" validate:"required"`
 }
 
 func (h HTTP) transfer(c echo.Context) error {
@@ -160,11 +177,8 @@ func (h HTTP) transfer(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 	r.UserID = userID
-	wallet, err := h.svc.Transfer(c.Request().Context(), domain.User{
-		ID: r.UserID,
-	}, r.Amount, domain.User{
-		ID: r.PassiveUserID,
-	})
+	wallet, err := h.svc.Transfer(c.Request().Context(), domain.User{ID: r.UserID},
+		domain.TransactionID(r.TransactionID), r.Amount, domain.User{ID: r.PassiveUserID})
 	if err != nil {
 		return err
 	}

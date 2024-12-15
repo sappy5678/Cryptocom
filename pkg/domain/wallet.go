@@ -2,15 +2,16 @@ package domain
 
 import (
 	"context"
+	"errors"
 	"time"
 )
 
 type Wallet struct {
-	ID        int       `json:"ID"`
+	ID        int       `json:"-"`
 	UserID    string    `json:"userID"`
 	Balance   int       `json:"balance"`
-	CreatedAt time.Time `json:"createdAt,omitempty"`
-	UpdatedAt time.Time `json:"updatedAt,omitempty"`
+	CreatedAt time.Time `json:"-"`
+	UpdatedAt time.Time `json:"-"`
 }
 
 type OperationType int
@@ -25,6 +26,7 @@ const (
 
 type Transaction struct {
 	ID            int           `json:"ID"`
+	TransactionID TransactionID `json:"transactionID"`
 	UserID        string        `json:"userID"`
 	Amount        int           `json:"amount"`
 	OperationType OperationType `json:"operationType"`
@@ -32,11 +34,25 @@ type Transaction struct {
 	CreatedAt     time.Time     `json:"createdAt"`
 }
 
-type WalletService interface {
-	Create(ctx context.Context, user User) error
-	Get(ctx context.Context, user User) (*Wallet, error)
-	GetTransactions(ctx context.Context, user User) ([]*Transaction, error)
-	Transfer(ctx context.Context, user User, amount int) (*Wallet, error)
-	Withdraw(ctx context.Context, user User, amount int) (*Wallet, error)
-	Deposit(ctx context.Context, user User, amount int) (*Wallet, error)
+type TransactionID string
+
+func (t TransactionID) ID() string {
+	return string(t)
 }
+func (t TransactionID) PassiveID() string {
+	return string(t) + "-passive"
+}
+
+type WalletService interface {
+	Create(ctx context.Context, user User) (*Wallet, error)
+	Get(ctx context.Context, user User) (*Wallet, error)
+	CreateTransactionID(ctx context.Context) TransactionID
+	GetTransactions(ctx context.Context, user User) ([]*Transaction, error)
+	Transfer(ctx context.Context, user User, transactionID TransactionID, amount int, passiveUser User) (*Wallet, error)
+	Withdraw(ctx context.Context, user User, transactionID TransactionID, amount int) (*Wallet, error)
+	Deposit(ctx context.Context, user User, transactionID TransactionID, amount int) (*Wallet, error)
+}
+
+var ErrNotFound = errors.New("not found")
+var ErrInsufficientBalance = errors.New("insufficient balance")
+var ErrInvalidAmount = errors.New("invalid amount")
