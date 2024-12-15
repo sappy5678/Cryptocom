@@ -19,5 +19,5 @@ CREATE TABLE IF NOT EXISTS UserWalletTransaction (
 );
 
 CREATE INDEX idxUserWalletUserID ON UserWallet(userID);
-CREATE INDEX idxUserWalletTransactionUserID ON UserWalletTransaction(userID);
+CREATE INDEX idxUserWalletTransactionUserIDCreatedAtID ON UserWalletTransaction(userID, createdAt, ID);
 COMMIT;
