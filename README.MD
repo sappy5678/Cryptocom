@@ -152,15 +152,17 @@ and the server will run on port 8080
    - Returns transactions sorted by creation time
 
 
-
-
-
 # Project Structure
-
-## Directory Layout
-
-
-
+* cmd/ => any executable code, like server main.go or any other executable tools
+* deploy/ => any deploy code, like db migration or any other deploy tools
+* pkg/ => main package code, like domain, service, utl, etc.
+* pkg/utl/ => utility package code, like postgres, zlog, etc.
+* pkg/domain/ => interface code and data model code, used for interaction between service
+* pkg/service/ => business logic code, like wallet service etc.
+* pkg/service/wallet/ => wallet service code, wired database and repository to provide business logic.
+* pkg/service/wallet/repository/ => database repository code, used for database operation.
+* pkg/service/wallet/transport/ => http transport code, used for wrap http request and response for service.
+* pkg/service/wallet/logging/ => logging code, used for wrap logger for http service.
 
 
 # How to test
@@ -189,12 +191,3 @@ ok      github.com/sappy5678/cryptocom/pkg/utl/postgres 3.624s  coverage: 83.3% 
 ok      github.com/sappy5678/cryptocom/pkg/utl/server   0.007s  coverage: 27.8% of statements
 ok      github.com/sappy5678/cryptocom/pkg/utl/zlog     0.006s  coverage: 100.0% of statements
 ```
-
-# 碎碎念
-* 用戶可以有多個錢包，但這裡為了簡潔，預設一個用戶對應到一個錢包
-* 用戶 API 需要驗證，但是這裡省略
-* 為了避免浮點數運算，錢包的 balance 是 bigint，1 dollor 會是 10^6
-* 交易備註系統這裡省略
-* passiveWalletID 是對應到被動錢包的 ID，例如：轉帳時，發起轉帳的錢包 ID 是 1，接收金額的錢包 ID 是 2，則 passiveWalletID 是 2
-* 交易類型：1 是轉帳，2 是提款，3 是存款
-
