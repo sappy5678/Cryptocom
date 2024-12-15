@@ -5,12 +5,14 @@ import (
 
 	"github.com/sappy5678/cryptocom/pkg/utl/postgres"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/goleak"
 
 	embeddedpostgres "github.com/fergusstrange/embedded-postgres"
 	_ "github.com/lib/pq"
 )
 
 func TestNew(t *testing.T) {
+	defer goleak.VerifyNone(t)
 	pgdb := embeddedpostgres.NewDatabase(embeddedpostgres.DefaultConfig().
 		Password("password").
 		Port(3001).Logger(nil))

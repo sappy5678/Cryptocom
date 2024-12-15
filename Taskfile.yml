@@ -1,4 +1,4 @@
-version: '2'
+version: "3"
 
 tasks:
   test:
@@ -11,28 +11,27 @@ tasks:
     cmds:
       - echo " *** Relocating packages to {{.TARGET_PATH}} ***"
       - task: replace-string
-        vars: {
-          SOURCE_STR: "{{.PACKAGE_NAME}}",
-          TARGET_STG: "{{.TARGET_PATH}}"
-        }
+        vars:
+          { SOURCE_STR: "{{.PACKAGE_NAME}}", TARGET_STG: "{{.TARGET_PATH}}" }
       - task: replace-string
-        vars: {
-          SOURCE_STR: "{{.PROJECT_NAME}}",
-          TARGET_STG: "{{.TARGET_PROJECTNAME}}"
-        }
+        vars:
+          {
+            SOURCE_STR: "{{.PROJECT_NAME}}",
+            TARGET_STG: "{{.TARGET_PROJECTNAME}}",
+          }
       - echo " *** Completed *** "
     silent: true
     vars:
       GITHUB: "github.com"
       PROJECT_NAME_DIR:
         sh: echo $(basename "$(dirname "$(pwd)")")
-      PROJECT_NAME: 
+      PROJECT_NAME:
         sh: echo $(basename "$(pwd)" | sed -e 's/[\/&]/\\&/g')
-      PACKAGE_NAME: 
+      PACKAGE_NAME:
         sh: echo "{{.GITHUB}}/{{.PROJECT_NAME_DIR}}/{{.PROJECT_NAME}}" | sed -e 's/[\/&]/\\&/g'
-      TARGET_PATH: 
+      TARGET_PATH:
         sh: echo "{{.TARGET}}" | sed -e 's/[\/&]/\\&/g'
-      TARGET_PROJECTNAME: 
+      TARGET_PROJECTNAME:
         sh: basename "dirname {{.TARGET_PATH}}" | sed -e 's/[\/&]/\\&/g'
     preconditions:
       - sh: "[ {{.TARGET}} != '' ]"

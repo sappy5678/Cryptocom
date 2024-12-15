@@ -5,9 +5,11 @@ import (
 
 	"github.com/sappy5678/cryptocom/pkg/utl/config"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/goleak"
 )
 
 func TestLoad(t *testing.T) {
+	defer goleak.VerifyNone(t)
 	cases := []struct {
 		name     string
 		path     string

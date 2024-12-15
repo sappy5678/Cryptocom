@@ -8,6 +8,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/goleak"
 
 	"github.com/sappy5678/cryptocom/pkg/domain"
 	"github.com/sappy5678/cryptocom/pkg/service/wallet"
@@ -57,6 +58,7 @@ var mockErrorWalletRepository = &repository.MockWalletRepository{
 }
 
 func TestNew(t *testing.T) {
+	defer goleak.VerifyNone(t)
 	cases := []struct {
 		name    string
 		db      *sqlx.DB
@@ -78,6 +80,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestInitialize(t *testing.T) {
+	defer goleak.VerifyNone(t)
 	cases := []struct {
 		name    string
 		db      *sqlx.DB
@@ -99,6 +102,7 @@ func TestInitialize(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
+	defer goleak.VerifyNone(t)
 	cases := []struct {
 		name     string
 		db       *sqlx.DB
@@ -133,6 +137,7 @@ func TestCreate(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
+	defer goleak.VerifyNone(t)
 	cases := []struct {
 		name     string
 		db       *sqlx.DB
@@ -167,6 +172,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestWithdraw(t *testing.T) {
+	defer goleak.VerifyNone(t)
 	cases := []struct {
 		name     string
 		db       *sqlx.DB
@@ -201,6 +207,7 @@ func TestWithdraw(t *testing.T) {
 }
 
 func TestDeposit(t *testing.T) {
+	defer goleak.VerifyNone(t)
 	cases := []struct {
 		name     string
 		db       *sqlx.DB
@@ -235,6 +242,7 @@ func TestDeposit(t *testing.T) {
 }
 
 func TestGetTransactions(t *testing.T) {
+	defer goleak.VerifyNone(t)
 	cases := []struct {
 		name     string
 		db       *sqlx.DB
@@ -269,6 +277,7 @@ func TestGetTransactions(t *testing.T) {
 }
 
 func TestTransfer(t *testing.T) {
+	defer goleak.VerifyNone(t)
 	cases := []struct {
 		name     string
 		db       *sqlx.DB
@@ -303,6 +312,7 @@ func TestTransfer(t *testing.T) {
 }
 
 func TestCreateTransactionID(t *testing.T) {
+	defer goleak.VerifyNone(t)
 	cases := []struct {
 		name    string
 		wantErr bool
