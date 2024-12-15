@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"math"
 	"net/http"
 	"time"
@@ -15,7 +16,7 @@ import (
 // postgresql error code define
 // http://www.postgresql.org/docs/9.3/static/errcodes-appendix.html
 
-func TimeToDBTime(t time.Time) time.Time {
+func TimeToUTC(t time.Time) time.Time {
 	return t.UTC().Round(time.Microsecond)
 }
 
@@ -102,7 +103,7 @@ func (w Wallet) Deposit(ctx context.Context, db *sqlx.DB, now time.Time, user do
 		return w.Get(ctx, db, user)
 	}
 
-	now = TimeToDBTime(now)
+	now = TimeToUTC(now)
 
 	tx, err := db.BeginTxx(ctx, nil)
 	if err != nil {
@@ -158,7 +159,7 @@ func (w Wallet) Withdraw(ctx context.Context, db *sqlx.DB, now time.Time, user d
 		return w.Get(ctx, db, user)
 	}
 
-	now = TimeToDBTime(now)
+	now = TimeToUTC(now)
 
 	// start transaction
 	tx, err := db.BeginTxx(ctx, nil)
@@ -225,7 +226,7 @@ func (w Wallet) Transfer(ctx context.Context, db *sqlx.DB, now time.Time, user d
 		return w.Get(ctx, db, user)
 	}
 
-	now = TimeToDBTime(now)
+	now = TimeToUTC(now)
 
 	// start transaction
 	tx, err := db.BeginTxx(ctx, nil)
@@ -282,14 +283,15 @@ func (w Wallet) Transfer(ctx context.Context, db *sqlx.DB, now time.Time, user d
 
 const getTransactionsQuery = `SELECT ID, userID, transactionID, operationType, amount, passiveUserID, createdAt FROM UserWalletTransaction WHERE userID=$1 AND createdAt <= $2 AND ID < $3 ORDER BY createdAt DESC LIMIT $4`
 
-func (w Wallet) GetTransactions(ctx context.Context, db *sqlx.DB, user domain.User, createdAt time.Time, lastReturnedID int, limit int) ([]*domain.Transaction, error) {
+func (w Wallet) GetTransactions(ctx context.Context, db *sqlx.DB, user domain.User, createdBefore time.Time, IDBefore int, limit int) ([]*domain.Transaction, error) {
 
 	// default values
-	if createdAt.IsZero() {
-		createdAt = time.Now()
+	if createdBefore.IsZero() {
+		createdBefore = time.Now()
 	}
-	if lastReturnedID == 0 {
-		lastReturnedID = math.MaxInt64
+	createdBefore = TimeToUTC(createdBefore)
+	if IDBefore == 0 {
+		IDBefore = math.MaxInt64
 	}
 	if limit <= 0 {
 		limit = 100
@@ -301,14 +303,15 @@ func (w Wallet) GetTransactions(ctx context.Context, db *sqlx.DB, user domain.Us
 	}
 	transactions := []*domain.Transaction{}
 
-	if err := db.SelectContext(ctx, &transactions, getTransactionsQuery, user.ID, createdAt,
-		lastReturnedID, limit); err != nil {
+	fmt.Println(createdBefore.UnixMicro(), IDBefore, limit)
+	if err := db.SelectContext(ctx, &transactions, getTransactionsQuery, user.ID, createdBefore,
+		IDBefore, limit); err != nil {
 		return nil, err
 	}
 
 	// remove timezone information
 	for _, transaction := range transactions {
-		transaction.CreatedAt = TimeToDBTime(transaction.CreatedAt)
+		transaction.CreatedAt = TimeToUTC(transaction.CreatedAt)
 	}
 	return transactions, nil
 }

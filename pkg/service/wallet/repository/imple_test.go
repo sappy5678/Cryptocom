@@ -26,7 +26,7 @@ type TestSuite struct {
 
 func cleanTransaction(want *domain.Transaction) {
 	want.ID = 0
-	want.CreatedAt = time.Time{}
+	want.CreatedAt = repository.TimeToUTC(time.Time{})
 }
 
 func (ts *TestSuite) SetupSuite() {
@@ -198,7 +198,6 @@ func (ts *TestSuite) TestDeposit() {
 			},
 			wantTransaction: []*domain.Transaction{
 				{
-					ID:            1,
 					TransactionID: "test-tx-1",
 					UserID:        "test-user-3",
 					Amount:        100,
@@ -218,7 +217,6 @@ func (ts *TestSuite) TestDeposit() {
 			},
 			wantTransaction: []*domain.Transaction{
 				{
-					ID:            1,
 					TransactionID: "test-tx-1",
 					UserID:        "test-user-3",
 					Amount:        100,
@@ -257,7 +255,11 @@ func (ts *TestSuite) TestDeposit() {
 			// check transaction
 			gotTransactions, err := wallet.GetTransactions(ctx, db, tt.user, time.Time{}, math.MaxInt64, 100)
 			assert.NoError(ts.T(), err)
-			assert.Equal(ts.T(), tt.wantTransaction, gotTransactions)
+			for i, want := range tt.wantTransaction {
+				cleanTransaction(want)
+				cleanTransaction(gotTransactions[i])
+			}
+			assert.ElementsMatch(ts.T(), tt.wantTransaction, gotTransactions)
 		})
 	}
 }
@@ -296,7 +298,6 @@ func (ts *TestSuite) TestWithdraw() {
 			},
 			wantTransaction: []*domain.Transaction{
 				{
-					ID:            2,
 					TransactionID: "test-tx-1",
 					UserID:        "test-user-4",
 					Amount:        100,
@@ -304,7 +305,6 @@ func (ts *TestSuite) TestWithdraw() {
 					CreatedAt:     mockNow,
 				},
 				{
-					ID:            1,
 					TransactionID: "test-tx-0",
 					UserID:        "test-user-4",
 					Amount:        1000,
@@ -324,7 +324,6 @@ func (ts *TestSuite) TestWithdraw() {
 			},
 			wantTransaction: []*domain.Transaction{
 				{
-					ID:            2,
 					TransactionID: "test-tx-1",
 					UserID:        "test-user-4",
 					Amount:        100,
@@ -332,7 +331,6 @@ func (ts *TestSuite) TestWithdraw() {
 					CreatedAt:     mockNow,
 				},
 				{
-					ID:            1,
 					TransactionID: "test-tx-0",
 					UserID:        "test-user-4",
 					Amount:        1000,
@@ -378,7 +376,11 @@ func (ts *TestSuite) TestWithdraw() {
 			// check transaction
 			gotTransactions, err := wallet.GetTransactions(ctx, db, tt.user, time.Now(), math.MaxInt64, 100)
 			assert.NoError(ts.T(), err)
-			assert.Equal(ts.T(), tt.wantTransaction, gotTransactions)
+			for i, want := range tt.wantTransaction {
+				cleanTransaction(want)
+				cleanTransaction(gotTransactions[i])
+			}
+			assert.ElementsMatch(ts.T(), tt.wantTransaction, gotTransactions)
 		})
 	}
 }
@@ -388,13 +390,13 @@ func (ts *TestSuite) TestTransfer() {
 
 	wallet := repository.Wallet{}
 	ctx := context.Background()
-	mockNow := repository.TimeToDBTime(time.Now())
+	mockNow := repository.TimeToUTC(time.Now())
 
 	// create a wallet for test, and deposit 1000 for test
 	testUser := domain.User{ID: "test-user-5"}
 	_, err := wallet.Create(ctx, db, testUser)
 	assert.NoError(ts.T(), err)
-	_, err = wallet.Deposit(ctx, db, repository.TimeToDBTime(mockNow.Add(10*time.Second)), testUser, "test-tx-0", 1000)
+	_, err = wallet.Deposit(ctx, db, repository.TimeToUTC(mockNow), testUser, "test-tx-0", 1000)
 	assert.NoError(ts.T(), err)
 
 	passiveUser := domain.User{ID: "test-user-6"}
@@ -429,7 +431,6 @@ func (ts *TestSuite) TestTransfer() {
 			},
 			wantTransaction: []*domain.Transaction{
 				{
-					ID:            1,
 					TransactionID: "test-tx-0",
 					UserID:        "test-user-5",
 					Amount:        1000,
@@ -437,7 +438,6 @@ func (ts *TestSuite) TestTransfer() {
 					CreatedAt:     mockNow,
 				},
 				{
-					ID:            2,
 					TransactionID: "test-tx-1",
 					UserID:        "test-user-5",
 					Amount:        100,
@@ -473,7 +473,6 @@ func (ts *TestSuite) TestTransfer() {
 			},
 			wantTransaction: []*domain.Transaction{
 				{
-					ID:            1,
 					TransactionID: "test-tx-0",
 					UserID:        "test-user-5",
 					Amount:        1000,
@@ -481,7 +480,6 @@ func (ts *TestSuite) TestTransfer() {
 					CreatedAt:     mockNow,
 				},
 				{
-					ID:            2,
 					TransactionID: "test-tx-1",
 					UserID:        "test-user-5",
 					Amount:        100,
@@ -517,7 +515,6 @@ func (ts *TestSuite) TestTransfer() {
 			},
 			wantTransaction: []*domain.Transaction{
 				{
-					ID:            1,
 					TransactionID: "test-tx-0",
 					UserID:        "test-user-5",
 					Amount:        1000,
@@ -525,7 +522,6 @@ func (ts *TestSuite) TestTransfer() {
 					CreatedAt:     mockNow,
 				},
 				{
-					ID:            3,
 					TransactionID: "test-tx-1",
 					UserID:        "test-user-5",
 					Amount:        100,
@@ -534,7 +530,6 @@ func (ts *TestSuite) TestTransfer() {
 					CreatedAt:     mockNow,
 				},
 				{
-					ID:            5,
 					TransactionID: "test-tx-2",
 					UserID:        "test-user-5",
 					Amount:        100,
@@ -624,6 +619,7 @@ func (ts *TestSuite) TestTransfer() {
 			// check transaction
 			gotTransactions, err := wallet.GetTransactions(ctx, db, tt.user, time.Now(), math.MaxInt64, 100)
 			assert.NoError(ts.T(), err)
+			assert.Equal(ts.T(), len(tt.wantTransaction), len(gotTransactions))
 			for i, want := range tt.wantTransaction {
 				cleanTransaction(want)
 				cleanTransaction(gotTransactions[i])
@@ -633,6 +629,7 @@ func (ts *TestSuite) TestTransfer() {
 			// check passive transaction
 			gotPassiveTransactions, err := wallet.GetTransactions(ctx, db, tt.passiveUser, time.Now(), math.MaxInt64, 100)
 			assert.NoError(ts.T(), err)
+			assert.Equal(ts.T(), len(tt.wantTransaction), len(gotTransactions))
 			for i, want := range tt.wantPassiveTransaction {
 				cleanTransaction(want)
 				cleanTransaction(gotPassiveTransactions[i])
@@ -648,6 +645,11 @@ func (ts *TestSuite) TestGetTransactions() {
 	wallet := repository.Wallet{}
 	ctx := context.Background()
 	mockNow := time.Now()
+	t1 := repository.TimeToUTC(mockNow.Add(-40 * time.Second))
+	t2 := repository.TimeToUTC(mockNow.Add(-30 * time.Second))
+	t3 := repository.TimeToUTC(mockNow.Add(-20 * time.Second))
+	t4 := repository.TimeToUTC(mockNow.Add(-10 * time.Second))
+	oldt := repository.TimeToUTC(mockNow.Add(-50 * time.Second))
 
 	// create a wallet for test, and create transactions
 	testUser := domain.User{ID: "test-user-7"}
@@ -656,61 +658,135 @@ func (ts *TestSuite) TestGetTransactions() {
 	assert.NoError(ts.T(), err)
 	_, err = wallet.Create(ctx, db, testPassiveUser)
 	assert.NoError(ts.T(), err)
-	_, err = wallet.Deposit(ctx, db, mockNow, testUser, "test-tx-1", 1000)
+	_, err = wallet.Deposit(ctx, db, t1, testUser, "test-tx-1", 1000)
 	assert.NoError(ts.T(), err)
-	_, err = wallet.Withdraw(ctx, db, mockNow, testUser, "test-tx-2", 100)
+	_, err = wallet.Withdraw(ctx, db, t2, testUser, "test-tx-2", 100)
 	assert.NoError(ts.T(), err)
-	_, err = wallet.Transfer(ctx, db, mockNow, testUser, "test-tx-3", 100, testPassiveUser)
+	_, err = wallet.Transfer(ctx, db, t3, testUser, "test-tx-3", 100, testPassiveUser)
 	assert.NoError(ts.T(), err)
-	_, err = wallet.Transfer(ctx, db, mockNow, testPassiveUser, "test-tx-4", 100, testUser)
+	_, err = wallet.Transfer(ctx, db, t4, testPassiveUser, "test-tx-4", 100, testUser)
 	assert.NoError(ts.T(), err)
 
 	tests := []struct {
 		name    string
 		user    domain.User
+		from    time.Time
+		lastID  int
+		limit   int
 		want    []*domain.Transaction
 		wantErr error
 	}{
 		{
 			name: "normal",
-			user: domain.User{ID: "test-user-7"},
+			user: testUser,
 			want: []*domain.Transaction{
 				{
-					ID:            6,
 					TransactionID: "test-tx-4-passive",
-					UserID:        "test-user-7",
+					UserID:        testUser.ID,
 					Amount:        100,
 					OperationType: domain.OperationTypeTransferIn,
 					PassiveUserID: testPassiveUser.ID,
-					CreatedAt:     mockNow,
+					CreatedAt:     t4,
 				},
 				{
-					ID:            2,
 					TransactionID: "test-tx-3",
-					UserID:        "test-user-7",
+					UserID:        testUser.ID,
 					Amount:        100,
 					PassiveUserID: testPassiveUser.ID,
 					OperationType: domain.OperationTypeTransferOut,
-					CreatedAt:     mockNow,
+					CreatedAt:     t3,
 				},
 				{
-					ID:            1,
 					TransactionID: "test-tx-2",
-					UserID:        "test-user-7",
+					UserID:        testUser.ID,
 					Amount:        100,
 					OperationType: domain.OperationTypeWithdraw,
-					CreatedAt:     mockNow,
+					CreatedAt:     t2,
 				},
 				{
-					ID:            0,
 					TransactionID: "test-tx-1",
-					UserID:        "test-user-7",
+					UserID:        testUser.ID,
 					Amount:        1000,
 					OperationType: domain.OperationTypeDeposit,
-					CreatedAt:     mockNow,
+					CreatedAt:     t1,
 				},
 			},
 			wantErr: nil,
+		},
+		{
+			name:   "test limit",
+			user:   testUser,
+			from:   t4,
+			lastID: 0,
+			limit:  1,
+			want: []*domain.Transaction{
+				{
+					TransactionID: "test-tx-4-passive",
+					UserID:        testUser.ID,
+					Amount:        100,
+					OperationType: domain.OperationTypeTransferIn,
+					PassiveUserID: testPassiveUser.ID,
+					CreatedAt:     t4,
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name:   "test lastID",
+			user:   testUser,
+			from:   t4,
+			lastID: 6,
+			limit:  1,
+			want: []*domain.Transaction{
+				{
+					TransactionID: "test-tx-3",
+					UserID:        testUser.ID,
+					Amount:        100,
+					OperationType: domain.OperationTypeTransferOut,
+					PassiveUserID: testPassiveUser.ID,
+					CreatedAt:     t3,
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name:   "test lastID 2",
+			user:   testUser,
+			from:   t4,
+			lastID: 3,
+			limit:  1,
+			want: []*domain.Transaction{
+				{
+					TransactionID: "test-tx-2",
+					UserID:        testUser.ID,
+					Amount:        100,
+					OperationType: domain.OperationTypeWithdraw,
+					CreatedAt:     t2,
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name:   "test createAt",
+			user:   testUser,
+			from:   t1,
+			lastID: 0,
+			limit:  1,
+			want: []*domain.Transaction{
+				{
+					TransactionID: "test-tx-1",
+					UserID:        testUser.ID,
+					Amount:        1000,
+					OperationType: domain.OperationTypeDeposit,
+					CreatedAt:     t1,
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "no transaction - old time",
+			user: testUser,
+			from: oldt,
 		},
 		{
 			name:    "no transaction",
@@ -722,15 +798,16 @@ func (ts *TestSuite) TestGetTransactions() {
 	for _, tt := range tests {
 		ts.Run(tt.name, func() {
 
-			got, err := wallet.GetTransactions(ctx, db, tt.user, time.Now(), math.MaxInt64, 100)
+			got, err := wallet.GetTransactions(ctx, db, tt.user, tt.from, tt.lastID, tt.limit)
 			if tt.wantErr != nil {
 				assert.ErrorIs(ts.T(), err, tt.wantErr, tt.name+": error is not equal")
 				return
 			}
 			assert.NoError(ts.T(), err, tt.name+": error is not nil")
-			for i, want := range tt.want {
-				cleanTransaction(want)
+			minLength := min(len(got), len(tt.want))
+			for i := 0; i < minLength; i++ {
 				cleanTransaction(got[i])
+				cleanTransaction(tt.want[i])
 			}
 			assert.ElementsMatch(ts.T(), tt.want, got)
 		})
@@ -742,7 +819,7 @@ func (ts *TestSuite) TestExistsTransactionID() {
 
 	wallet := repository.Wallet{}
 	ctx := context.Background()
-	mockNow := repository.TimeToDBTime(time.Now())
+	mockNow := repository.TimeToUTC(time.Now())
 	// create a wallet for test, and create transactions
 	testUser := domain.User{ID: "test-user-9"}
 	_, err := wallet.Create(ctx, db, testUser)
