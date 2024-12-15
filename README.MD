@@ -174,7 +174,11 @@ go test ./... -cover -p=1
 ```
 Why we use -p=1?
 Since we use embedded postgres, it will start a new instance for each test, so we need to use -p=1 to avoid file io issue.
-It is better to use isolated postgres and create a new database for each test. But it is a big task for this demo.
+It is better to use mock database for each test. But I don't have enough time for this demo.
+
+I believe goleak is not working well with sqlx/db sql/db
+since they maintain their own connection pool, and cannot be closed by our code
+and goleak willdetect the connection pool, and report the error
 
 ## Result
 most of the test are covered, but some of the test are not covered because of the mock interface.
@@ -195,4 +199,6 @@ ok      github.com/sappy5678/cryptocom/pkg/utl/zlog     0.006s  coverage: 100.0%
 ```
 
 # Total Time Used
-
+```
+25hr
+```
