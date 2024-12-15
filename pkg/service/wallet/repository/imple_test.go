@@ -25,6 +25,7 @@ type TestSuite struct {
 	dbConnection *sqlx.DB
 	pgdb         *embeddedpostgres.EmbeddedPostgres
 	driver       database.Driver
+	migrate      *migrate.Migrate
 }
 
 func cleanTransaction(want *domain.Transaction) {
@@ -43,28 +44,22 @@ func (ts *TestSuite) SetupSuite() {
 	ts.dbConnection.Exec("CREATE DATABASE cryptocom;")
 	err = ts.dbConnection.Close()
 	assert.NoError(ts.T(), err)
+	ts.dbConnection = sqlx.MustConnect("postgres", "postgres://postgres:password@localhost:3000/cryptocom?sslmode=disable")
+	ts.driver, err = postgres.WithInstance(ts.dbConnection.DB, &postgres.Config{})
+	assert.NoError(ts.T(), err)
+	ts.migrate, err = migrate.NewWithDatabaseInstance(
+		"file://../../../../deploy/db/migrations",
+		"postgres", ts.driver)
+	assert.NoError(ts.T(), err)
 }
 
 func (ts *TestSuite) SetupTest() {
-	ts.dbConnection = sqlx.MustConnect("postgres", "postgres://postgres:password@localhost:3000/cryptocom?sslmode=disable")
-	var err error
-	ts.driver, err = postgres.WithInstance(ts.dbConnection.DB, &postgres.Config{})
-	assert.NoError(ts.T(), err)
-	m, err := migrate.NewWithDatabaseInstance(
-		"file://../../../../deploy/db/migrations",
-		"postgres", ts.driver)
-	assert.NoError(ts.T(), err)
-	assert.NoError(ts.T(), m.Up())
+	assert.NoError(ts.T(), ts.migrate.Up())
 }
 
 func (ts *TestSuite) TearDownTest() {
-	m, err := migrate.NewWithDatabaseInstance(
-		"file://../../../../deploy/db/migrations",
-		"postgres", ts.driver)
-	assert.NoError(ts.T(), err)
-	assert.NoError(ts.T(), m.Down())
-	assert.NoError(ts.T(), ts.driver.Close())
-	assert.NoError(ts.T(), ts.dbConnection.Close())
+	assert.NoError(ts.T(), ts.migrate.Down())
+
 }
 
 func (ts *TestSuite) TearDownSuite() {
@@ -72,6 +67,10 @@ func (ts *TestSuite) TearDownSuite() {
 	assert.NoError(ts.T(), err)
 	err = ts.pgdb.Stop()
 	assert.NoError(ts.T(), err)
+	err1, err2 := ts.migrate.Close()
+	assert.NoError(ts.T(), err1)
+	assert.NoError(ts.T(), err2)
+	assert.NoError(ts.T(), ts.dbConnection.Close())
 }
 
 func (ts *TestSuite) TestCreate() {
