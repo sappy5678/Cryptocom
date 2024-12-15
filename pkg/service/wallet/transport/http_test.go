@@ -529,6 +529,7 @@ func TestGetTransactions(t *testing.T) {
 				t.Fatal(err)
 			}
 			defer res.Body.Close()
+
 			if tt.wantResp != nil {
 				var response []*domain.Transaction
 				if err := json.NewDecoder(res.Body).Decode(&response); err != nil {

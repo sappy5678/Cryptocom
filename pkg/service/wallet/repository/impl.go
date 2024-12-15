@@ -333,13 +333,17 @@ func (w *Wallet) GetTransactions(ctx context.Context, db *sqlx.DB, user domain.U
 	if createdBefore.IsZero() {
 		createdBefore = time.Now()
 	}
+
 	createdBefore = TimeToUTC(createdBefore)
+
 	if IDBefore == 0 {
 		IDBefore = math.MaxInt64
 	}
+
 	if limit <= 0 {
 		limit = 100
 	}
+
 	if exists, err := w.Exists(ctx, db, user); err != nil {
 
 		return nil, err

@@ -256,6 +256,7 @@ func (h HTTP) getTransactions(c echo.Context) error {
 	}
 
 	createdBefore := time.Time{}
+
 	if r.CreatedBeforeStr != "" {
 		var err error
 		createdBefore, err = time.Parse(time.RFC3339, r.CreatedBeforeStr)
