@@ -59,6 +59,7 @@ var mockErrorWalletRepository = &repository.MockWalletRepository{
 
 func TestNew(t *testing.T) {
 	defer goleak.VerifyNone(t)
+
 	cases := []struct {
 		name    string
 		db      *sqlx.DB
@@ -81,6 +82,7 @@ func TestNew(t *testing.T) {
 
 func TestInitialize(t *testing.T) {
 	defer goleak.VerifyNone(t)
+
 	cases := []struct {
 		name    string
 		db      *sqlx.DB
@@ -103,6 +105,7 @@ func TestInitialize(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	defer goleak.VerifyNone(t)
+
 	cases := []struct {
 		name     string
 		db       *sqlx.DB
@@ -127,6 +130,7 @@ func TestCreate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := wallet.New(tt.db, tt.mockRepo)
 			_, err := svc.Create(context.Background(), domain.User{ID: "1"})
+
 			if tt.wantErr {
 				assert.NotNil(t, err)
 			} else {
@@ -138,6 +142,7 @@ func TestCreate(t *testing.T) {
 
 func TestGet(t *testing.T) {
 	defer goleak.VerifyNone(t)
+
 	cases := []struct {
 		name     string
 		db       *sqlx.DB
@@ -162,6 +167,7 @@ func TestGet(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := wallet.New(tt.db, tt.mockRepo)
 			_, err := svc.Get(context.Background(), domain.User{ID: "1"})
+
 			if tt.wantErr {
 				assert.NotNil(t, err)
 			} else {
@@ -173,6 +179,7 @@ func TestGet(t *testing.T) {
 
 func TestWithdraw(t *testing.T) {
 	defer goleak.VerifyNone(t)
+
 	cases := []struct {
 		name     string
 		db       *sqlx.DB
@@ -197,6 +204,7 @@ func TestWithdraw(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := wallet.New(tt.db, tt.mockRepo)
 			_, err := svc.Withdraw(context.Background(), domain.User{ID: "1"}, "txn-1", 100)
+
 			if tt.wantErr {
 				assert.NotNil(t, err)
 			} else {
@@ -208,6 +216,7 @@ func TestWithdraw(t *testing.T) {
 
 func TestDeposit(t *testing.T) {
 	defer goleak.VerifyNone(t)
+
 	cases := []struct {
 		name     string
 		db       *sqlx.DB
@@ -232,6 +241,7 @@ func TestDeposit(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := wallet.New(tt.db, tt.mockRepo)
 			_, err := svc.Deposit(context.Background(), domain.User{ID: "1"}, "txn-1", 100)
+
 			if tt.wantErr {
 				assert.NotNil(t, err)
 			} else {
@@ -243,6 +253,7 @@ func TestDeposit(t *testing.T) {
 
 func TestGetTransactions(t *testing.T) {
 	defer goleak.VerifyNone(t)
+
 	cases := []struct {
 		name     string
 		db       *sqlx.DB
@@ -267,6 +278,7 @@ func TestGetTransactions(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := wallet.New(tt.db, tt.mockRepo)
 			_, err := svc.GetTransactions(context.Background(), domain.User{ID: "1"}, time.Now(), 0, 10)
+
 			if tt.wantErr {
 				assert.NotNil(t, err)
 			} else {
@@ -278,6 +290,7 @@ func TestGetTransactions(t *testing.T) {
 
 func TestTransfer(t *testing.T) {
 	defer goleak.VerifyNone(t)
+
 	cases := []struct {
 		name     string
 		db       *sqlx.DB
@@ -302,6 +315,7 @@ func TestTransfer(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := wallet.New(tt.db, tt.mockRepo)
 			_, err := svc.Transfer(context.Background(), domain.User{ID: "1"}, "txn-1", 100, domain.User{ID: "2"})
+
 			if tt.wantErr {
 				assert.NotNil(t, err)
 			} else {
@@ -313,6 +327,7 @@ func TestTransfer(t *testing.T) {
 
 func TestCreateTransactionID(t *testing.T) {
 	defer goleak.VerifyNone(t)
+
 	cases := []struct {
 		name    string
 		wantErr bool
@@ -327,6 +342,7 @@ func TestCreateTransactionID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := wallet.New(&sqlx.DB{}, nil)
 			txnID := svc.CreateTransactionID(context.Background())
+
 			assert.Equal(t, string(txnID), txnID.ID())
 			assert.Equal(t, string(txnID)+"-passive", txnID.PassiveID())
 		})

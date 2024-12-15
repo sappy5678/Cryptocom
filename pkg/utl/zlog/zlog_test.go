@@ -16,6 +16,7 @@ func TestNew(t *testing.T) {
 
 func TestLog(t *testing.T) {
 	log := zlog.New()
+
 	assert.NotPanics(t, func() {
 		log.Log(context.Background(), "test", "test", nil, nil)
 	})

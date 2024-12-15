@@ -41,6 +41,7 @@ func (w *Wallet) Withdraw(ctx context.Context, user domain.User, transactionID d
 
 func (w *Wallet) Deposit(ctx context.Context, user domain.User, transactionID domain.TransactionID, amount int) (*domain.Wallet, error) {
 	wallet, err := w.walletRepo.Deposit(ctx, w.db, time.Now(), user, transactionID, amount)
+
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +49,6 @@ func (w *Wallet) Deposit(ctx context.Context, user domain.User, transactionID do
 }
 
 func (w *Wallet) GetTransactions(ctx context.Context, user domain.User, createdAt time.Time, lastReturnedID int, limit int) ([]*domain.Transaction, error) {
-
 	transactions, err := w.walletRepo.GetTransactions(ctx, w.db, user, createdAt, lastReturnedID, limit)
 	if err != nil {
 		return nil, err

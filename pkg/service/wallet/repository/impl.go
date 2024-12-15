@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"fmt"
 	"math"
 	"net/http"
 	"time"
@@ -300,7 +299,6 @@ func (w *Wallet) GetTransactions(ctx context.Context, db *sqlx.DB, user domain.U
 	}
 	transactions := []*domain.Transaction{}
 
-	fmt.Println(createdBefore.UnixMicro(), IDBefore, limit)
 	if err := db.SelectContext(ctx, &transactions, getTransactionsQuery, user.ID, createdBefore,
 		IDBefore, limit); err != nil {
 		return nil, err

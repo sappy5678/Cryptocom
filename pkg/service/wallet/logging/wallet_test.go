@@ -39,69 +39,83 @@ var mockWalletService = &wallet.MockWalletService{
 
 func TestCreate(t *testing.T) {
 	defer goleak.VerifyNone(t)
+
 	log := zlog.New()
 	svc := wl.New(mockWalletService, log)
 	r1, e1 := svc.Create(context.Background(), domain.User{ID: "test-user-id"})
 	r2, e2 := mockWalletService.Create(context.Background(), domain.User{ID: "test-user-id"})
+
 	assert.Equal(t, r1, r2)
 	assert.Equal(t, e1, e2)
 }
 
 func TestGet(t *testing.T) {
 	defer goleak.VerifyNone(t)
+
 	log := zlog.New()
 	svc := wl.New(mockWalletService, log)
 	r1, e1 := svc.Get(context.Background(), domain.User{ID: "test-user-id"})
 	r2, e2 := mockWalletService.Get(context.Background(), domain.User{ID: "test-user-id"})
+
 	assert.Equal(t, r1, r2)
 	assert.Equal(t, e1, e2)
 }
 
 func TestWithdraw(t *testing.T) {
 	defer goleak.VerifyNone(t)
+
 	log := zlog.New()
 	svc := wl.New(mockWalletService, log)
 	r1, e1 := svc.Withdraw(context.Background(), domain.User{ID: "test-user-id"}, "txn-1", 100)
 	r2, e2 := mockWalletService.Withdraw(context.Background(), domain.User{ID: "test-user-id"}, "txn-1", 100)
+
 	assert.Equal(t, r1, r2)
 	assert.Equal(t, e1, e2)
 }
 
 func TestDeposit(t *testing.T) {
 	defer goleak.VerifyNone(t)
+
 	log := zlog.New()
 	svc := wl.New(mockWalletService, log)
 	r1, e1 := svc.Deposit(context.Background(), domain.User{ID: "test-user-id"}, "txn-1", 100)
 	r2, e2 := mockWalletService.Deposit(context.Background(), domain.User{ID: "test-user-id"}, "txn-1", 100)
+
 	assert.Equal(t, r1, r2)
 	assert.Equal(t, e1, e2)
 }
 
 func TestGetTransactions(t *testing.T) {
 	defer goleak.VerifyNone(t)
+
 	log := zlog.New()
 	svc := wl.New(mockWalletService, log)
 	r1, e1 := svc.GetTransactions(context.Background(), domain.User{ID: "test-user-id"}, time.Now(), 0, 10)
 	r2, e2 := mockWalletService.GetTransactions(context.Background(), domain.User{ID: "test-user-id"}, time.Now(), 0, 10)
+
 	assert.Equal(t, r1, r2)
 	assert.Equal(t, e1, e2)
 }
 
 func TestCreateTransactionID(t *testing.T) {
 	defer goleak.VerifyNone(t)
+
 	log := zlog.New()
 	svc := wl.New(mockWalletService, log)
 	r1 := svc.CreateTransactionID(context.Background())
 	r2 := mockWalletService.CreateTransactionID(context.Background())
+
 	assert.Equal(t, r1, r2)
 }
 
 func TestTransfer(t *testing.T) {
 	defer goleak.VerifyNone(t)
+
 	log := zlog.New()
 	svc := wl.New(mockWalletService, log)
 	r1, e1 := svc.Transfer(context.Background(), domain.User{ID: "test-user-id"}, "txn-1", 100, domain.User{ID: "test-user-id-2"})
 	r2, e2 := mockWalletService.Transfer(context.Background(), domain.User{ID: "test-user-id"}, "txn-1", 100, domain.User{ID: "test-user-id-2"})
+
 	assert.Equal(t, r1, r2)
 	assert.Equal(t, e1, e2)
 }

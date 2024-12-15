@@ -7,6 +7,8 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"strconv"
 	"testing"
 	"time"
 
@@ -117,7 +119,12 @@ func TestCreate(t *testing.T) {
 			ts := httptest.NewServer(r)
 			defer ts.Close()
 			path := ts.URL + "/v1/user/" + tt.userID + "/wallet/create"
-			res, err := http.Post(path, "application/json", bytes.NewBufferString("{}"))
+			req, err := http.NewRequest(http.MethodPut, path, bytes.NewBufferString("{}"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			req.Header.Set("Content-Type", "application/json")
+			res, err := http.DefaultClient.Do(req)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -322,7 +329,12 @@ func TestDeposit(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			res, err := http.Post(path, "application/json", bytes.NewBuffer(reqBody))
+			req, err := http.NewRequest(http.MethodPut, path, bytes.NewBuffer(reqBody))
+			if err != nil {
+				t.Fatal(err)
+			}
+			req.Header.Set("Content-Type", "application/json")
+			res, err := http.DefaultClient.Do(req)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -411,7 +423,12 @@ func TestWithdraw(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			res, err := http.Post(path, "application/json", bytes.NewBuffer(reqBody))
+			req, err := http.NewRequest(http.MethodPut, path, bytes.NewBuffer(reqBody))
+			if err != nil {
+				t.Fatal(err)
+			}
+			req.Header.Set("Content-Type", "application/json")
+			res, err := http.DefaultClient.Do(req)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -449,9 +466,9 @@ func TestGetTransactions(t *testing.T) {
 			name:   "success",
 			userID: "1",
 			req: transport.GetTransactionsReq{
-				CreatedAt:      time.Now(),
-				LastReturnedID: 0,
-				Limit:          10,
+				CreatedBeforeStr: time.Now().Format(time.RFC3339),
+				IDBefore:         0,
+				Limit:            10,
 			},
 			wantStatus: http.StatusOK,
 			wantResp:   []*domain.Transaction{},
@@ -461,9 +478,9 @@ func TestGetTransactions(t *testing.T) {
 			name:   "missing userID",
 			userID: "",
 			req: transport.GetTransactionsReq{
-				CreatedAt:      time.Now(),
-				LastReturnedID: 0,
-				Limit:          10,
+				CreatedBeforeStr: time.Now().Format(time.RFC3339),
+				IDBefore:         0,
+				Limit:            10,
 			},
 			wantStatus: http.StatusBadRequest,
 			wantResp:   nil,
@@ -476,9 +493,9 @@ func TestGetTransactions(t *testing.T) {
 			name:   "error",
 			userID: "1",
 			req: transport.GetTransactionsReq{
-				CreatedAt:      time.Now(),
-				LastReturnedID: 0,
-				Limit:          10,
+				CreatedBeforeStr: time.Now().Format(time.RFC3339),
+				IDBefore:         0,
+				Limit:            10,
 			},
 			wantStatus: http.StatusBadRequest,
 			wantResp:   nil,
@@ -497,11 +514,12 @@ func TestGetTransactions(t *testing.T) {
 			ts := httptest.NewServer(r)
 			defer ts.Close()
 			path := ts.URL + "/v1/user/" + tt.userID + "/wallet/transactions"
-			reqBody, err := json.Marshal(tt.req)
-			if err != nil {
-				t.Fatal(err)
-			}
-			req, err := http.NewRequest(http.MethodGet, path, bytes.NewBuffer(reqBody))
+			query := url.Values{}
+			query.Add("createdBefore", tt.req.CreatedBeforeStr)
+			query.Add("IDBefore", strconv.Itoa(tt.req.IDBefore))
+			query.Add("limit", strconv.Itoa(tt.req.Limit))
+
+			req, err := http.NewRequest(http.MethodGet, path+"?"+query.Encode(), nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -598,7 +616,12 @@ func TestTransfer(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			res, err := http.Post(path, "application/json", bytes.NewBuffer(reqBody))
+			req, err := http.NewRequest(http.MethodPut, path, bytes.NewBuffer(reqBody))
+			if err != nil {
+				t.Fatal(err)
+			}
+			req.Header.Set("Content-Type", "application/json")
+			res, err := http.DefaultClient.Do(req)
 			if err != nil {
 				t.Fatal(err)
 			}
