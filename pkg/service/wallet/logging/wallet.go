@@ -26,7 +26,7 @@ type LogService struct {
 const name = "wallet"
 
 // Create logging
-func (ls *LogService) Create(c context.Context, req domain.User) (err error) {
+func (ls *LogService) Create(c context.Context, req domain.User) (wallet *domain.Wallet, err error) {
 	defer func(begin time.Time) {
 		ls.logger.Log(
 			c,

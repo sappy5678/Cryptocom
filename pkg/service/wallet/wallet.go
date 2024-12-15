@@ -8,11 +8,12 @@ import (
 )
 
 // Create creates a new user account
-func (w Wallet) Create(ctx context.Context, user domain.User) error {
-	if err := w.walletRepo.Create(ctx, w.db, user); err != nil {
-		return err
+func (w Wallet) Create(ctx context.Context, user domain.User) (*domain.Wallet, error) {
+	wallet, err := w.walletRepo.Create(ctx, w.db, user)
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	return wallet, nil
 }
 
 func (w Wallet) Get(ctx context.Context, user domain.User) (*domain.Wallet, error) {
@@ -23,18 +24,34 @@ func (w Wallet) Get(ctx context.Context, user domain.User) (*domain.Wallet, erro
 	return wallet, nil
 }
 
-func (w Wallet) GetTransactions(ctx context.Context, user domain.User) ([]*domain.Transaction, error) {
-	return nil, nil
-}
-
-func (w Wallet) Transfer(ctx context.Context, user domain.User, amount int) (*domain.Wallet, error) {
-	return nil, nil
-}
-
 func (w Wallet) Withdraw(ctx context.Context, user domain.User, amount int) (*domain.Wallet, error) {
-	return nil, nil
+	wallet, err := w.walletRepo.Withdraw(ctx, w.db, user, amount)
+	if err != nil {
+		return nil, err
+	}
+	return wallet, nil
 }
 
 func (w Wallet) Deposit(ctx context.Context, user domain.User, amount int) (*domain.Wallet, error) {
-	return nil, nil
+	wallet, err := w.walletRepo.Deposit(ctx, w.db, user, amount)
+	if err != nil {
+		return nil, err
+	}
+	return wallet, nil
+}
+
+func (w Wallet) GetTransactions(ctx context.Context, user domain.User) ([]*domain.Transaction, error) {
+	transactions, err := w.walletRepo.GetTransactions(ctx, w.db, user)
+	if err != nil {
+		return nil, err
+	}
+	return transactions, nil
+}
+
+func (w Wallet) Transfer(ctx context.Context, user domain.User, amount int, passiveUser domain.User) (*domain.Wallet, error) {
+	wallet, err := w.walletRepo.Transfer(ctx, w.db, user, amount, passiveUser)
+	if err != nil {
+		return nil, err
+	}
+	return wallet, nil
 }

@@ -10,7 +10,6 @@ import (
 // Service defines in domain
 
 // New creates new wallet application service
-// TODO: using WalletService
 func New(db *sqlx.DB, walletRepo repository.WalletRepository) domain.WalletService {
 	return &Wallet{db: db, walletRepo: walletRepo}
 }
