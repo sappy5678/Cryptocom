@@ -2,6 +2,7 @@ package transport
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/sappy5678/cryptocom/pkg/domain"
 
@@ -141,11 +142,17 @@ func (h HTTP) withdraw(c echo.Context) error {
 }
 
 type getTransactionsReq struct {
-	UserID string
+	UserID         string
+	CreatedAt      time.Time `json:"createdAt"`
+	LastReturnedID int       `json:"lastReturnedID"`
+	Limit          int       `json:"limit"`
 }
 
 func (h HTTP) getTransactions(c echo.Context) error {
 	r := getTransactionsReq{}
+	if err := c.Bind(&r); err != nil {
+		return c.NoContent(http.StatusBadRequest)
+	}
 	userID := c.Param("userID")
 	if userID == "" {
 		return c.NoContent(http.StatusBadRequest)
@@ -153,7 +160,7 @@ func (h HTTP) getTransactions(c echo.Context) error {
 	r.UserID = userID
 	transactions, err := h.svc.GetTransactions(c.Request().Context(), domain.User{
 		ID: r.UserID,
-	})
+	}, r.CreatedAt, r.LastReturnedID, r.Limit)
 	if err != nil {
 		return err
 	}

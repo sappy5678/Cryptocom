@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/sappy5678/cryptocom/pkg/domain"
@@ -178,12 +179,12 @@ func (w Wallet) Transfer(ctx context.Context, db *sqlx.DB, user domain.User, tra
 	return &wallet, nil
 }
 
-const getTransactionsQuery = `SELECT ID, userID, transactionID, operationType, amount, passiveUserID, createdAt FROM UserWalletTransaction WHERE userID=$1`
+const getTransactionsQuery = `SELECT ID, userID, transactionID, operationType, amount, passiveUserID, createdAt FROM UserWalletTransaction WHERE userID=$1 AND createdAt <= $2 AND ID < $3 ORDER BY createdAt DESC LIMIT $4`
 
-func (w Wallet) GetTransactions(ctx context.Context, db *sqlx.DB, user domain.User) ([]*domain.Transaction, error) {
+func (w Wallet) GetTransactions(ctx context.Context, db *sqlx.DB, user domain.User, createdAt time.Time, lastReturnedID int, limit int) ([]*domain.Transaction, error) {
 	transactions := []*domain.Transaction{}
 
-	if err := db.SelectContext(ctx, &transactions, getTransactionsQuery, user.ID); err != nil {
+	if err := db.SelectContext(ctx, &transactions, getTransactionsQuery, user.ID, createdAt, lastReturnedID, limit); err != nil {
 		return nil, err
 	}
 	fmt.Println(getTransactionsQuery, user.ID, fmt.Sprintf("%+v", transactions))
