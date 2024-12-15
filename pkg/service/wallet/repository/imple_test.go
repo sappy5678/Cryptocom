@@ -62,11 +62,11 @@ func (ts *TestSuite) TearDownTest() {
 }
 
 func (ts *TestSuite) TearDownSuite() {
-	err := ts.dbConnection.Close()
-	assert.NoError(ts.T(), err)
+	_, err := ts.dbConnection.ExecContext(context.Background(), "CLOSE ALL;")
 	err1, err2 := ts.migrate.Close()
 	assert.NoError(ts.T(), err1)
 	assert.NoError(ts.T(), err2)
+	assert.NoError(ts.T(), err)
 	assert.NoError(ts.T(), ts.dbConnection.Close())
 	assert.NoError(ts.T(), ts.pgdb.Stop())
 }
