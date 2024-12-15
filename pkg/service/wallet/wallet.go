@@ -3,7 +3,6 @@ package wallet
 
 import (
 	"context"
-	"math"
 	"time"
 
 	"github.com/google/uuid"
@@ -33,10 +32,7 @@ func (w Wallet) CreateTransactionID(ctx context.Context) domain.TransactionID {
 }
 
 func (w Wallet) Withdraw(ctx context.Context, user domain.User, transactionID domain.TransactionID, amount int) (*domain.Wallet, error) {
-	if amount <= 0 {
-		return nil, domain.ErrInvalidAmount
-	}
-	wallet, err := w.walletRepo.Withdraw(ctx, w.db, user, transactionID, amount)
+	wallet, err := w.walletRepo.Withdraw(ctx, w.db, time.Now(), user, transactionID, amount)
 	if err != nil {
 		return nil, err
 	}
@@ -44,10 +40,7 @@ func (w Wallet) Withdraw(ctx context.Context, user domain.User, transactionID do
 }
 
 func (w Wallet) Deposit(ctx context.Context, user domain.User, transactionID domain.TransactionID, amount int) (*domain.Wallet, error) {
-	if amount <= 0 {
-		return nil, domain.ErrInvalidAmount
-	}
-	wallet, err := w.walletRepo.Deposit(ctx, w.db, user, transactionID, amount)
+	wallet, err := w.walletRepo.Deposit(ctx, w.db, time.Now(), user, transactionID, amount)
 	if err != nil {
 		return nil, err
 	}
@@ -55,16 +48,7 @@ func (w Wallet) Deposit(ctx context.Context, user domain.User, transactionID dom
 }
 
 func (w Wallet) GetTransactions(ctx context.Context, user domain.User, createdAt time.Time, lastReturnedID int, limit int) ([]*domain.Transaction, error) {
-	// default values
-	if createdAt.IsZero() {
-		createdAt = time.Now()
-	}
-	if lastReturnedID == 0 {
-		lastReturnedID = math.MaxInt64
-	}
-	if limit <= 0 {
-		limit = 100
-	}
+
 	transactions, err := w.walletRepo.GetTransactions(ctx, w.db, user, createdAt, lastReturnedID, limit)
 	if err != nil {
 		return nil, err
@@ -73,10 +57,7 @@ func (w Wallet) GetTransactions(ctx context.Context, user domain.User, createdAt
 }
 
 func (w Wallet) Transfer(ctx context.Context, user domain.User, transactionID domain.TransactionID, amount int, passiveUser domain.User) (*domain.Wallet, error) {
-	if amount <= 0 {
-		return nil, domain.ErrInvalidAmount
-	}
-	wallet, err := w.walletRepo.Transfer(ctx, w.db, user, transactionID, amount, passiveUser)
+	wallet, err := w.walletRepo.Transfer(ctx, w.db, time.Now(), user, transactionID, amount, passiveUser)
 	if err != nil {
 		return nil, err
 	}
