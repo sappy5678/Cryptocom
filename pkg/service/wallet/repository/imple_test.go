@@ -8,6 +8,7 @@ import (
 
 	embeddedpostgres "github.com/fergusstrange/embedded-postgres"
 	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
@@ -23,6 +24,7 @@ type TestSuite struct {
 	suite.Suite
 	dbConnection *sqlx.DB
 	pgdb         *embeddedpostgres.EmbeddedPostgres
+	driver       database.Driver
 }
 
 func cleanTransaction(want *domain.Transaction) {
@@ -45,27 +47,24 @@ func (ts *TestSuite) SetupSuite() {
 
 func (ts *TestSuite) SetupTest() {
 	ts.dbConnection = sqlx.MustConnect("postgres", "postgres://postgres:password@localhost:3000/cryptocom?sslmode=disable")
-	driver, err := postgres.WithInstance(ts.dbConnection.DB, &postgres.Config{})
+	var err error
+	ts.driver, err = postgres.WithInstance(ts.dbConnection.DB, &postgres.Config{})
 	assert.NoError(ts.T(), err)
 	m, err := migrate.NewWithDatabaseInstance(
 		"file://../../../../deploy/db/migrations",
-		"postgres", driver)
+		"postgres", ts.driver)
 	assert.NoError(ts.T(), err)
-	err = m.Up()
-	assert.NoError(ts.T(), err)
+	assert.NoError(ts.T(), m.Up())
 }
 
 func (ts *TestSuite) TearDownTest() {
-	driver, err := postgres.WithInstance(ts.dbConnection.DB, &postgres.Config{})
-	assert.NoError(ts.T(), err)
 	m, err := migrate.NewWithDatabaseInstance(
 		"file://../../../../deploy/db/migrations",
-		"postgres", driver)
+		"postgres", ts.driver)
 	assert.NoError(ts.T(), err)
-	err = m.Down()
-	assert.NoError(ts.T(), err)
-	err = ts.dbConnection.Close()
-	assert.NoError(ts.T(), err)
+	assert.NoError(ts.T(), m.Down())
+	assert.NoError(ts.T(), ts.driver.Close())
+	assert.NoError(ts.T(), ts.dbConnection.Close())
 }
 
 func (ts *TestSuite) TearDownSuite() {
