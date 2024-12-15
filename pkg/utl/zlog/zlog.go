@@ -1,9 +1,8 @@
 package zlog
 
 import (
+	"context"
 	"os"
-
-	"github.com/labstack/echo"
 
 	"github.com/rs/zerolog"
 )
@@ -22,18 +21,13 @@ func New() *Log {
 }
 
 // Log logs using zerolog
-func (z *Log) Log(ctx echo.Context, source, msg string, err error, params map[string]interface{}) {
+func (z *Log) Log(ctx context.Context, source, msg string, err error, params map[string]interface{}) {
 
 	if params == nil {
 		params = make(map[string]interface{})
 	}
 
 	params["source"] = source
-
-	if id, ok := ctx.Get("id").(int); ok {
-		params["id"] = id
-		params["user"] = ctx.Get("username").(string)
-	}
 
 	if err != nil {
 		params["error"] = err

@@ -1,55 +1,40 @@
 package postgres_test
 
 import (
-	"database/sql"
 	"testing"
 
+	"github.com/sappy5678/cryptocom/pkg/utl/postgres"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/ribice/gorsk"
-
-	"github.com/ribice/gorsk/pkg/utl/postgres"
-
-	"github.com/fortytw2/dockertest"
+	embeddedpostgres "github.com/fergusstrange/embedded-postgres"
+	_ "github.com/lib/pq"
 )
 
 func TestNew(t *testing.T) {
-	container, err := dockertest.RunContainer("postgres:alpine", "5432", func(addr string) error {
-		db, err := sql.Open("postgres", "postgres://postgres:postgres@"+addr+"?sslmode=disable")
-		if err != nil {
-			return err
-		}
+	pgdb := embeddedpostgres.NewDatabase(embeddedpostgres.DefaultConfig().
+		Password("password").
+		Port(3001).Logger(nil))
 
-		return db.Ping()
-	}, "-e", "POSTGRES_PASSWORD=postgres", "-e", "POSTGRES_USER=postgres")
-	defer container.Shutdown()
-	if err != nil {
-		t.Fatalf("could not start postgres, %s", err)
-	}
+	err := pgdb.Start()
+	assert.NoError(t, err)
+	defer pgdb.Stop()
 
-	_, err = postgres.New("PSN", 1, false)
+	_, err = postgres.New("PSN")
 	if err == nil {
 		t.Error("Expected error")
 	}
 
-	_, err = postgres.New("postgres://postgres:postgres@localhost:1234/postgres?sslmode=disable", 0, false)
+	_, err = postgres.New("postgres://postgres:password@localhost:1234/postgres?sslmode=disable")
 	if err == nil {
 		t.Error("Expected error")
 	}
 
-	dbLogTest, err := postgres.New("postgres://postgres:postgres@"+container.Addr+"/postgres?sslmode=disable", 0, true)
-	if err != nil {
-		t.Fatalf("Error establishing connection %v", err)
-	}
-	dbLogTest.Close()
-
-	db, err := postgres.New("postgres://postgres:postgres@"+container.Addr+"/postgres?sslmode=disable", 1, true)
+	db, err := postgres.New("postgres://postgres:password@localhost:3001/postgres?sslmode=disable")
 	if err != nil {
 		t.Fatalf("Error establishing connection %v", err)
 	}
 
-	var user gorsk.User
-	db.Select(&user)
+	db.Ping()
 
 	assert.NotNil(t, db)
 

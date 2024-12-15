@@ -7,23 +7,29 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/go-playground/validator"
 	"github.com/labstack/echo/middleware"
-	"github.com/ribice/gorsk/pkg/utl/middleware/secure"
 
 	"github.com/labstack/echo"
 )
+
+// CORS adds Cross-Origin Resource Sharing support
+func CORS() echo.MiddlewareFunc {
+	return middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins:     []string{"*"},
+		MaxAge:           86400,
+		AllowMethods:     []string{"POST", "GET", "PUT", "DELETE", "PATCH", "HEAD"},
+		AllowHeaders:     []string{"*"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	})
+}
 
 // New instantates new Echo server
 func New() *echo.Echo {
 	e := echo.New()
 	e.Use(middleware.Logger(), middleware.Recover(),
-		secure.CORS(), secure.Headers())
+		CORS())
 	e.GET("/", healthCheck)
-	e.Validator = &CustomValidator{V: validator.New()}
-	custErr := &customErrHandler{e: e}
-	e.HTTPErrorHandler = custErr.handler
-	e.Binder = &CustomBinder{b: &echo.DefaultBinder{}}
 	return e
 }
 
@@ -57,7 +63,7 @@ func Start(e *echo.Echo, cfg *Config) {
 
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 10 seconds.
-	quit := make(chan os.Signal)
+	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 	<-quit
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

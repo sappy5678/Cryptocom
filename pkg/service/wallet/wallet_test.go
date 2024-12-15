@@ -1,486 +1,324 @@
 package wallet_test
 
 import (
+	"context"
+	"errors"
 	"testing"
+	"time"
 
-	"github.com/go-pg/pg/v9/orm"
-	"github.com/labstack/echo"
-	"github.com/sappy5678/cryptocom"
-
-	"github.com/sappy5678/cryptocom/pkg/service/user"
-	"github.com/sappy5678/cryptocom/pkg/utl/mock"
-	"github.com/sappy5678/cryptocom/pkg/utl/mock/mockdb"
-
+	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/sappy5678/cryptocom/pkg/domain"
+	"github.com/sappy5678/cryptocom/pkg/service/wallet"
+	"github.com/sappy5678/cryptocom/pkg/service/wallet/repository"
 )
 
-func TestCreate(t *testing.T) {
-	type args struct {
-		c   echo.Context
-		req cryptocom.User
-	}
-	cases := []struct {
-		name     string
-		args     args
-		wantErr  bool
-		wantData cryptocom.User
-		udb      *mockdb.User
-		rbac     *mock.RBAC
-		sec      *mock.Secure
-	}{{
-		name: "Fail on is lower role",
-		rbac: &mock.RBAC{
-			AccountCreateFn: func(echo.Context, cryptocom.AccessRole, int, int) error {
-				return cryptocom.ErrGeneric
-			}},
-		wantErr: true,
-		args: args{req: cryptocom.User{
-			FirstName: "John",
-			LastName:  "Doe",
-			Username:  "JohnDoe",
-			RoleID:    1,
-			Password:  "Thranduil8822",
-		}},
+var mockWalletRepository = &repository.MockWalletRepository{
+	CreateFunc: func(ctx context.Context, db *sqlx.DB, user domain.User) (*domain.Wallet, error) {
+		return &domain.Wallet{UserID: "1"}, nil
 	},
-		{
-			name: "Success",
-			args: args{req: cryptocom.User{
-				FirstName: "John",
-				LastName:  "Doe",
-				Username:  "JohnDoe",
-				RoleID:    1,
-				Password:  "Thranduil8822",
-			}},
-			udb: &mockdb.User{
-				CreateFn: func(db orm.DB, u cryptocom.User) (cryptocom.User, error) {
-					u.CreatedAt = mock.TestTime(2000)
-					u.UpdatedAt = mock.TestTime(2000)
-					u.Base.ID = 1
-					return u, nil
-				},
-			},
-			rbac: &mock.RBAC{
-				AccountCreateFn: func(echo.Context, cryptocom.AccessRole, int, int) error {
-					return nil
-				}},
-			sec: &mock.Secure{
-				HashFn: func(string) string {
-					return "h4$h3d"
-				},
-			},
-			wantData: cryptocom.User{
-				Base: cryptocom.Base{
-					ID:        1,
-					CreatedAt: mock.TestTime(2000),
-					UpdatedAt: mock.TestTime(2000),
-				},
-				FirstName: "John",
-				LastName:  "Doe",
-				Username:  "JohnDoe",
-				RoleID:    1,
-				Password:  "h4$h3d",
-			}}}
-	for _, tt := range cases {
-		t.Run(tt.name, func(t *testing.T) {
-			s := user.New(nil, tt.udb, tt.rbac, tt.sec)
-			usr, err := s.Create(tt.args.c, tt.args.req)
-			assert.Equal(t, tt.wantErr, err != nil)
-			assert.Equal(t, tt.wantData, usr)
-		})
-	}
+	GetFunc: func(ctx context.Context, db *sqlx.DB, user domain.User) (*domain.Wallet, error) {
+		return &domain.Wallet{UserID: "1"}, nil
+	},
+	WithdrawFunc: func(ctx context.Context, db *sqlx.DB, time time.Time, user domain.User, transactionID domain.TransactionID, amount int) (*domain.Wallet, error) {
+		return &domain.Wallet{UserID: "1"}, nil
+	},
+	DepositFunc: func(ctx context.Context, db *sqlx.DB, time time.Time, user domain.User, transactionID domain.TransactionID, amount int) (*domain.Wallet, error) {
+		return &domain.Wallet{UserID: "1"}, nil
+	},
+	GetTransactionsFunc: func(ctx context.Context, db *sqlx.DB, user domain.User, createdBefore time.Time, IDBefore int, limit int) ([]*domain.Transaction, error) {
+		return []*domain.Transaction{{UserID: "1"}}, nil
+	},
+	TransferFunc: func(ctx context.Context, db *sqlx.DB, time time.Time, user domain.User, transactionID domain.TransactionID, amount int, passiveUser domain.User) (*domain.Wallet, error) {
+		return &domain.Wallet{UserID: "1"}, nil
+	},
 }
 
-func TestView(t *testing.T) {
-	type args struct {
-		c  echo.Context
-		id int
-	}
-	cases := []struct {
-		name     string
-		args     args
-		wantData cryptocom.User
-		wantErr  error
-		udb      *mockdb.User
-		rbac     *mock.RBAC
-	}{
-		{
-			name: "Fail on RBAC",
-			args: args{id: 5},
-			rbac: &mock.RBAC{
-				EnforceUserFn: func(c echo.Context, id int) error {
-					return cryptocom.ErrGeneric
-				}},
-			wantErr: cryptocom.ErrGeneric,
-		},
-		{
-			name: "Success",
-			args: args{id: 1},
-			wantData: cryptocom.User{
-				Base: cryptocom.Base{
-					ID:        1,
-					CreatedAt: mock.TestTime(2000),
-					UpdatedAt: mock.TestTime(2000),
-				},
-				FirstName: "John",
-				LastName:  "Doe",
-				Username:  "JohnDoe",
-			},
-			rbac: &mock.RBAC{
-				EnforceUserFn: func(c echo.Context, id int) error {
-					return nil
-				}},
-			udb: &mockdb.User{
-				ViewFn: func(db orm.DB, id int) (cryptocom.User, error) {
-					if id == 1 {
-						return cryptocom.User{
-							Base: cryptocom.Base{
-								ID:        1,
-								CreatedAt: mock.TestTime(2000),
-								UpdatedAt: mock.TestTime(2000),
-							},
-							FirstName: "John",
-							LastName:  "Doe",
-							Username:  "JohnDoe",
-						}, nil
-					}
-					return cryptocom.User{}, nil
-				}},
-		},
-	}
-	for _, tt := range cases {
-		t.Run(tt.name, func(t *testing.T) {
-			s := user.New(nil, tt.udb, tt.rbac, nil)
-			usr, err := s.View(tt.args.c, tt.args.id)
-			assert.Equal(t, tt.wantData, usr)
-			assert.Equal(t, tt.wantErr, err)
-		})
-	}
+var mockErrorWalletRepository = &repository.MockWalletRepository{
+	CreateFunc: func(ctx context.Context, db *sqlx.DB, user domain.User) (*domain.Wallet, error) {
+		return nil, errors.New("error")
+	},
+	GetFunc: func(ctx context.Context, db *sqlx.DB, user domain.User) (*domain.Wallet, error) {
+		return nil, errors.New("error")
+	},
+	WithdrawFunc: func(ctx context.Context, db *sqlx.DB, time time.Time, user domain.User, transactionID domain.TransactionID, amount int) (*domain.Wallet, error) {
+		return nil, errors.New("error")
+	},
+	DepositFunc: func(ctx context.Context, db *sqlx.DB, time time.Time, user domain.User, transactionID domain.TransactionID, amount int) (*domain.Wallet, error) {
+		return nil, errors.New("error")
+	},
+	GetTransactionsFunc: func(ctx context.Context, db *sqlx.DB, user domain.User, createdBefore time.Time, IDBefore int, limit int) ([]*domain.Transaction, error) {
+		return nil, errors.New("error")
+	},
+	TransferFunc: func(ctx context.Context, db *sqlx.DB, time time.Time, user domain.User, transactionID domain.TransactionID, amount int, passiveUser domain.User) (*domain.Wallet, error) {
+		return nil, errors.New("error")
+	},
 }
 
-func TestList(t *testing.T) {
-	type args struct {
-		c   echo.Context
-		pgn cryptocom.Pagination
-	}
-	cases := []struct {
-		name     string
-		args     args
-		wantData []cryptocom.User
-		wantErr  bool
-		udb      *mockdb.User
-		rbac     *mock.RBAC
-	}{
-		{
-			name: "Fail on query List",
-			args: args{c: nil, pgn: cryptocom.Pagination{
-				Limit:  100,
-				Offset: 200,
-			}},
-			wantErr: true,
-			rbac: &mock.RBAC{
-				UserFn: func(c echo.Context) cryptocom.AuthUser {
-					return cryptocom.AuthUser{
-						ID:         1,
-						CompanyID:  2,
-						LocationID: 3,
-						Role:       cryptocom.UserRole,
-					}
-				}}},
-		{
-			name: "Success",
-			args: args{c: nil, pgn: cryptocom.Pagination{
-				Limit:  100,
-				Offset: 200,
-			}},
-			rbac: &mock.RBAC{
-				UserFn: func(c echo.Context) cryptocom.AuthUser {
-					return cryptocom.AuthUser{
-						ID:         1,
-						CompanyID:  2,
-						LocationID: 3,
-						Role:       cryptocom.AdminRole,
-					}
-				}},
-			udb: &mockdb.User{
-				ListFn: func(orm.DB, *cryptocom.ListQuery, cryptocom.Pagination) ([]cryptocom.User, error) {
-					return []cryptocom.User{
-						{
-							Base: cryptocom.Base{
-								ID:        1,
-								CreatedAt: mock.TestTime(1999),
-								UpdatedAt: mock.TestTime(2000),
-							},
-							FirstName: "John",
-							LastName:  "Doe",
-							Email:     "johndoe@gmail.com",
-							Username:  "johndoe",
-						},
-						{
-							Base: cryptocom.Base{
-								ID:        2,
-								CreatedAt: mock.TestTime(2001),
-								UpdatedAt: mock.TestTime(2002),
-							},
-							FirstName: "Hunter",
-							LastName:  "Logan",
-							Email:     "logan@aol.com",
-							Username:  "hunterlogan",
-						},
-					}, nil
-				}},
-			wantData: []cryptocom.User{
-				{
-					Base: cryptocom.Base{
-						ID:        1,
-						CreatedAt: mock.TestTime(1999),
-						UpdatedAt: mock.TestTime(2000),
-					},
-					FirstName: "John",
-					LastName:  "Doe",
-					Email:     "johndoe@gmail.com",
-					Username:  "johndoe",
-				},
-				{
-					Base: cryptocom.Base{
-						ID:        2,
-						CreatedAt: mock.TestTime(2001),
-						UpdatedAt: mock.TestTime(2002),
-					},
-					FirstName: "Hunter",
-					LastName:  "Logan",
-					Email:     "logan@aol.com",
-					Username:  "hunterlogan",
-				}},
-		},
-	}
-	for _, tt := range cases {
-		t.Run(tt.name, func(t *testing.T) {
-			s := user.New(nil, tt.udb, tt.rbac, nil)
-			usrs, err := s.List(tt.args.c, tt.args.pgn)
-			assert.Equal(t, tt.wantData, usrs)
-			assert.Equal(t, tt.wantErr, err != nil)
-		})
-	}
-
-}
-
-func TestDelete(t *testing.T) {
-	type args struct {
-		c  echo.Context
-		id int
-	}
+func TestNew(t *testing.T) {
 	cases := []struct {
 		name    string
-		args    args
-		wantErr error
-		udb     *mockdb.User
-		rbac    *mock.RBAC
+		db      *sqlx.DB
+		wantErr bool
 	}{
 		{
-			name:    "Fail on ViewUser",
-			args:    args{id: 1},
-			wantErr: cryptocom.ErrGeneric,
-			udb: &mockdb.User{
-				ViewFn: func(db orm.DB, id int) (cryptocom.User, error) {
-					if id != 1 {
-						return cryptocom.User{}, nil
-					}
-					return cryptocom.User{}, cryptocom.ErrGeneric
-				},
-			},
-		},
-		{
-			name: "Fail on RBAC",
-			args: args{id: 1},
-			udb: &mockdb.User{
-				ViewFn: func(db orm.DB, id int) (cryptocom.User, error) {
-					return cryptocom.User{
-						Base: cryptocom.Base{
-							ID:        id,
-							CreatedAt: mock.TestTime(1999),
-							UpdatedAt: mock.TestTime(2000),
-						},
-						FirstName: "John",
-						LastName:  "Doe",
-						Role: &cryptocom.Role{
-							AccessLevel: cryptocom.UserRole,
-						},
-					}, nil
-				},
-			},
-			rbac: &mock.RBAC{
-				IsLowerRoleFn: func(echo.Context, cryptocom.AccessRole) error {
-					return cryptocom.ErrGeneric
-				}},
-			wantErr: cryptocom.ErrGeneric,
-		},
-		{
-			name: "Success",
-			args: args{id: 1},
-			udb: &mockdb.User{
-				ViewFn: func(db orm.DB, id int) (cryptocom.User, error) {
-					return cryptocom.User{
-						Base: cryptocom.Base{
-							ID:        id,
-							CreatedAt: mock.TestTime(1999),
-							UpdatedAt: mock.TestTime(2000),
-						},
-						FirstName: "John",
-						LastName:  "Doe",
-						Role: &cryptocom.Role{
-							AccessLevel: cryptocom.AdminRole,
-							ID:          2,
-							Name:        "Admin",
-						},
-					}, nil
-				},
-				DeleteFn: func(db orm.DB, usr cryptocom.User) error {
-					return nil
-				},
-			},
-			rbac: &mock.RBAC{
-				IsLowerRoleFn: func(echo.Context, cryptocom.AccessRole) error {
-					return nil
-				}},
+			name:    "create wallet service",
+			db:      &sqlx.DB{},
+			wantErr: false,
 		},
 	}
-	for _, tt := range cases {
-		t.Run(tt.name, func(t *testing.T) {
-			s := user.New(nil, tt.udb, tt.rbac, nil)
-			err := s.Delete(tt.args.c, tt.args.id)
-			if err != tt.wantErr {
-				t.Errorf("Expected error %v, received %v", tt.wantErr, err)
-			}
-		})
-	}
-}
 
-func TestUpdate(t *testing.T) {
-	type args struct {
-		c   echo.Context
-		upd user.Update
-	}
-	cases := []struct {
-		name     string
-		args     args
-		wantData cryptocom.User
-		wantErr  error
-		udb      *mockdb.User
-		rbac     *mock.RBAC
-	}{
-		{
-			name: "Fail on RBAC",
-			args: args{upd: user.Update{
-				ID: 1,
-			}},
-			rbac: &mock.RBAC{
-				EnforceUserFn: func(c echo.Context, id int) error {
-					return cryptocom.ErrGeneric
-				}},
-			wantErr: cryptocom.ErrGeneric,
-		},
-		{
-			name: "Fail on Update",
-			args: args{upd: user.Update{
-				ID: 1,
-			}},
-			rbac: &mock.RBAC{
-				EnforceUserFn: func(c echo.Context, id int) error {
-					return nil
-				}},
-			wantErr: cryptocom.ErrGeneric,
-			udb: &mockdb.User{
-				ViewFn: func(db orm.DB, id int) (cryptocom.User, error) {
-					return cryptocom.User{
-						Base: cryptocom.Base{
-							ID:        1,
-							CreatedAt: mock.TestTime(1990),
-							UpdatedAt: mock.TestTime(1991),
-						},
-						CompanyID:  1,
-						LocationID: 2,
-						RoleID:     3,
-						FirstName:  "John",
-						LastName:   "Doe",
-						Mobile:     "123456",
-						Phone:      "234567",
-						Address:    "Work Address",
-						Email:      "golang@go.org",
-					}, nil
-				},
-				UpdateFn: func(db orm.DB, usr cryptocom.User) error {
-					return cryptocom.ErrGeneric
-				},
-			},
-		},
-		{
-			name: "Success",
-			args: args{upd: user.Update{
-				ID:        1,
-				FirstName: "John",
-				LastName:  "Doe",
-				Mobile:    "123456",
-				Phone:     "234567",
-			}},
-			rbac: &mock.RBAC{
-				EnforceUserFn: func(c echo.Context, id int) error {
-					return nil
-				}},
-			wantData: cryptocom.User{
-				Base: cryptocom.Base{
-					ID:        1,
-					CreatedAt: mock.TestTime(1990),
-					UpdatedAt: mock.TestTime(2000),
-				},
-				CompanyID:  1,
-				LocationID: 2,
-				RoleID:     3,
-				FirstName:  "John",
-				LastName:   "Doe",
-				Mobile:     "123456",
-				Phone:      "234567",
-				Address:    "Work Address",
-				Email:      "golang@go.org",
-			},
-			udb: &mockdb.User{
-				ViewFn: func(db orm.DB, id int) (cryptocom.User, error) {
-					return cryptocom.User{
-						Base: cryptocom.Base{
-							ID:        1,
-							CreatedAt: mock.TestTime(1990),
-							UpdatedAt: mock.TestTime(2000),
-						},
-						CompanyID:  1,
-						LocationID: 2,
-						RoleID:     3,
-						FirstName:  "John",
-						LastName:   "Doe",
-						Mobile:     "123456",
-						Phone:      "234567",
-						Address:    "Work Address",
-						Email:      "golang@go.org",
-					}, nil
-				},
-				UpdateFn: func(db orm.DB, usr cryptocom.User) error {
-					usr.UpdatedAt = mock.TestTime(2000)
-					return nil
-				},
-			},
-		},
-	}
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			s := user.New(nil, tt.udb, tt.rbac, nil)
-			usr, err := s.Update(tt.args.c, tt.args.upd)
-			assert.Equal(t, tt.wantData, usr)
-			assert.Equal(t, tt.wantErr, err)
+			svc := wallet.New(tt.db, nil)
+			assert.NotNil(t, svc)
 		})
 	}
 }
 
 func TestInitialize(t *testing.T) {
-	u := user.Initialize(nil, nil, nil)
-	if u == nil {
-		t.Error("User service not initialized")
+	cases := []struct {
+		name    string
+		db      *sqlx.DB
+		wantErr bool
+	}{
+		{
+			name:    "initialize wallet service",
+			db:      &sqlx.DB{},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := wallet.Initialize(tt.db)
+			assert.NotNil(t, svc)
+		})
+	}
+}
+
+func TestCreate(t *testing.T) {
+	cases := []struct {
+		name     string
+		db       *sqlx.DB
+		mockRepo repository.WalletRepository
+		wantErr  bool
+	}{
+		{
+			name:     "create wallet service",
+			db:       &sqlx.DB{},
+			mockRepo: mockWalletRepository,
+			wantErr:  false,
+		},
+		{
+			name:     "create wallet service error",
+			db:       &sqlx.DB{},
+			mockRepo: mockErrorWalletRepository,
+			wantErr:  true,
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := wallet.New(tt.db, tt.mockRepo)
+			_, err := svc.Create(context.Background(), domain.User{ID: "1"})
+			if tt.wantErr {
+				assert.NotNil(t, err)
+			} else {
+				assert.Nil(t, err)
+			}
+		})
+	}
+}
+
+func TestGet(t *testing.T) {
+	cases := []struct {
+		name     string
+		db       *sqlx.DB
+		mockRepo repository.WalletRepository
+		wantErr  bool
+	}{
+		{
+			name:     "get wallet success",
+			db:       &sqlx.DB{},
+			mockRepo: mockWalletRepository,
+			wantErr:  false,
+		},
+		{
+			name:     "get wallet error",
+			db:       &sqlx.DB{},
+			mockRepo: mockErrorWalletRepository,
+			wantErr:  true,
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := wallet.New(tt.db, tt.mockRepo)
+			_, err := svc.Get(context.Background(), domain.User{ID: "1"})
+			if tt.wantErr {
+				assert.NotNil(t, err)
+			} else {
+				assert.Nil(t, err)
+			}
+		})
+	}
+}
+
+func TestWithdraw(t *testing.T) {
+	cases := []struct {
+		name     string
+		db       *sqlx.DB
+		mockRepo repository.WalletRepository
+		wantErr  bool
+	}{
+		{
+			name:     "withdraw success",
+			db:       &sqlx.DB{},
+			mockRepo: mockWalletRepository,
+			wantErr:  false,
+		},
+		{
+			name:     "withdraw error",
+			db:       &sqlx.DB{},
+			mockRepo: mockErrorWalletRepository,
+			wantErr:  true,
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := wallet.New(tt.db, tt.mockRepo)
+			_, err := svc.Withdraw(context.Background(), domain.User{ID: "1"}, "txn-1", 100)
+			if tt.wantErr {
+				assert.NotNil(t, err)
+			} else {
+				assert.Nil(t, err)
+			}
+		})
+	}
+}
+
+func TestDeposit(t *testing.T) {
+	cases := []struct {
+		name     string
+		db       *sqlx.DB
+		mockRepo repository.WalletRepository
+		wantErr  bool
+	}{
+		{
+			name:     "deposit success",
+			db:       &sqlx.DB{},
+			mockRepo: mockWalletRepository,
+			wantErr:  false,
+		},
+		{
+			name:     "deposit error",
+			db:       &sqlx.DB{},
+			mockRepo: mockErrorWalletRepository,
+			wantErr:  true,
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := wallet.New(tt.db, tt.mockRepo)
+			_, err := svc.Deposit(context.Background(), domain.User{ID: "1"}, "txn-1", 100)
+			if tt.wantErr {
+				assert.NotNil(t, err)
+			} else {
+				assert.Nil(t, err)
+			}
+		})
+	}
+}
+
+func TestGetTransactions(t *testing.T) {
+	cases := []struct {
+		name     string
+		db       *sqlx.DB
+		mockRepo repository.WalletRepository
+		wantErr  bool
+	}{
+		{
+			name:     "get transactions success",
+			db:       &sqlx.DB{},
+			mockRepo: mockWalletRepository,
+			wantErr:  false,
+		},
+		{
+			name:     "get transactions error",
+			db:       &sqlx.DB{},
+			mockRepo: mockErrorWalletRepository,
+			wantErr:  true,
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := wallet.New(tt.db, tt.mockRepo)
+			_, err := svc.GetTransactions(context.Background(), domain.User{ID: "1"}, time.Now(), 0, 10)
+			if tt.wantErr {
+				assert.NotNil(t, err)
+			} else {
+				assert.Nil(t, err)
+			}
+		})
+	}
+}
+
+func TestTransfer(t *testing.T) {
+	cases := []struct {
+		name     string
+		db       *sqlx.DB
+		mockRepo repository.WalletRepository
+		wantErr  bool
+	}{
+		{
+			name:     "transfer success",
+			db:       &sqlx.DB{},
+			mockRepo: mockWalletRepository,
+			wantErr:  false,
+		},
+		{
+			name:     "transfer error",
+			db:       &sqlx.DB{},
+			mockRepo: mockErrorWalletRepository,
+			wantErr:  true,
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := wallet.New(tt.db, tt.mockRepo)
+			_, err := svc.Transfer(context.Background(), domain.User{ID: "1"}, "txn-1", 100, domain.User{ID: "2"})
+			if tt.wantErr {
+				assert.NotNil(t, err)
+			} else {
+				assert.Nil(t, err)
+			}
+		})
+	}
+}
+
+func TestCreateTransactionID(t *testing.T) {
+	cases := []struct {
+		name    string
+		wantErr bool
+	}{
+		{
+			name:    "create transaction id success",
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := wallet.New(&sqlx.DB{}, nil)
+			txnID := svc.CreateTransactionID(context.Background())
+			assert.Equal(t, string(txnID), txnID.ID())
+			assert.Equal(t, string(txnID)+"-passive", txnID.PassiveID())
+		})
 	}
 }

@@ -3,7 +3,7 @@ package config_test
 import (
 	"testing"
 
-	"github.com/ribice/gorsk/pkg/utl/config"
+	"github.com/sappy5678/cryptocom/pkg/utl/config"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -28,26 +28,12 @@ func TestLoad(t *testing.T) {
 			name: "Success",
 			path: "testdata/config.testdata.yaml",
 			wantData: &config.Configuration{
-				DB: &config.Database{
-					LogQueries: true,
-					Timeout:    20,
-				},
+
 				Server: &config.Server{
 					Port:         ":8080",
 					Debug:        true,
 					ReadTimeout:  15,
 					WriteTimeout: 20,
-				},
-				JWT: &config.JWT{
-					MinSecretLength:  128,
-					DurationMinutes:  10,
-					RefreshDuration:  10,
-					MaxRefresh:       144,
-					SigningAlgorithm: "HS384",
-				},
-				App: &config.Application{
-					MinPasswordStr: 3,
-					SwaggerUIPath:  "assets/swagger",
 				},
 			},
 		},

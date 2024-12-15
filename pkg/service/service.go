@@ -55,7 +55,6 @@ func Start(cfg *config.Configuration) error {
 	log := zlog.New()
 
 	e := server.New()
-	e.Static("/swaggerui", cfg.App.SwaggerUIPath)
 	v1 := e.Group("/v1")
 	wt.NewHTTP(wl.New(wallet.Initialize(db), log), v1)
 

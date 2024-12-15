@@ -16,6 +16,7 @@ import (
 	"github.com/sappy5678/cryptocom/pkg/service/wallet/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"go.uber.org/goleak"
 )
 
 type TestSuite struct {
@@ -892,6 +893,7 @@ func (ts *TestSuite) TestExists() {
 }
 
 func TestWalletSuite(t *testing.T) {
+	defer goleak.VerifyNone(t)
 	ts := new(TestSuite)
 	suite.Run(t, ts)
 }

@@ -16,7 +16,7 @@ func New(db *sqlx.DB, walletRepo repository.WalletRepository) domain.WalletServi
 
 // Initialize initalizes Wallet application service with defaults
 func Initialize(db *sqlx.DB) domain.WalletService {
-	return New(db, repository.Wallet{})
+	return New(db, &repository.Wallet{})
 }
 
 // Wallet represents wallet application service

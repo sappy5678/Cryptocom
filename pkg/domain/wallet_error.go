@@ -7,4 +7,5 @@ var (
 	ErrWalletNotFound   = errors.New("wallet not found")
 	ErrNotEnoughBalance = errors.New("not enough balance")
 	ErrTransferToSelf   = errors.New("transfer to self")
+	ErrUserIDRequired   = errors.New("userID is required")
 )
