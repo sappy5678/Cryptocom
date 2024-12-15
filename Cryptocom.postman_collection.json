@@ -1,0 +1,495 @@
+{
+	"info": {
+		"_postman_id": "8f293e62-9559-4f33-97d7-ed23a05d9e8c",
+		"name": "Cryptocom",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "258561"
+	},
+	"item": [
+		{
+			"name": "Health",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/v1/health",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"v1",
+						"health"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Wallet",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/v1/user/:userID/wallet/create",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"v1",
+						"user",
+						":userID",
+						"wallet",
+						"create"
+					],
+					"variable": [
+						{
+							"key": "userID",
+							"value": "ad0a8306-cd09-4cac-95ba-0e198d114d55"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Create Wallet",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/v1/user/:userID/wallet/create",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"v1",
+								"user",
+								":userID",
+								"wallet",
+								"create"
+							],
+							"variable": [
+								{
+									"key": "userID",
+									"value": "fec8a02a-09b2-4767-ada9-a2c10a5ba284"
+								}
+							]
+						}
+					},
+					"_postman_previewlanguage": null,
+					"header": null,
+					"cookie": [],
+					"body": null
+				}
+			]
+		},
+		{
+			"name": "Get Wallet",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/v1/user/:userID/wallet",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"v1",
+						"user",
+						":userID",
+						"wallet"
+					],
+					"variable": [
+						{
+							"key": "userID",
+							"value": "ad0a8306-cd09-4cac-95ba-0e198d114d55"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "TransactionID",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/v1/user/:userID/wallet/transactionID",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"v1",
+						"user",
+						":userID",
+						"wallet",
+						"transactionID"
+					],
+					"variable": [
+						{
+							"key": "userID",
+							"value": "ad0a8306-cd09-4cac-95ba-0e198d114d55"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Transations",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/v1/user/:userID/wallet/transactions?limit&IDBefore&createdBefore",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"v1",
+						"user",
+						":userID",
+						"wallet",
+						"transactions"
+					],
+					"query": [
+						{
+							"key": "limit",
+							"value": null,
+							"description": "int"
+						},
+						{
+							"key": "IDBefore",
+							"value": null,
+							"description": "int"
+						},
+						{
+							"key": "createdBefore",
+							"value": null,
+							"description": "time string RFC3339"
+						}
+					],
+					"variable": [
+						{
+							"key": "userID",
+							"value": "ad0a8306-cd09-4cac-95ba-0e198d114d55"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "TransationsBeforeCreateTime",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/v1/user/:userID/wallet/transactions?limit&IDBefore&createdBefore=2024-12-15T15:18:39.172254Z",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"v1",
+						"user",
+						":userID",
+						"wallet",
+						"transactions"
+					],
+					"query": [
+						{
+							"key": "limit",
+							"value": null,
+							"description": "int"
+						},
+						{
+							"key": "IDBefore",
+							"value": null,
+							"description": "int"
+						},
+						{
+							"key": "createdBefore",
+							"value": "2024-12-15T15:18:39.172254Z",
+							"description": "time string RFC3339"
+						}
+					],
+					"variable": [
+						{
+							"key": "userID",
+							"value": "ad0a8306-cd09-4cac-95ba-0e198d114d55"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "TransationsBeforeID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/v1/user/:userID/wallet/transactions?limit&IDBefore=3&createdBefore",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"v1",
+						"user",
+						":userID",
+						"wallet",
+						"transactions"
+					],
+					"query": [
+						{
+							"key": "limit",
+							"value": null,
+							"description": "int"
+						},
+						{
+							"key": "IDBefore",
+							"value": "3",
+							"description": "int"
+						},
+						{
+							"key": "createdBefore",
+							"value": null,
+							"description": "time string RFC3339"
+						}
+					],
+					"variable": [
+						{
+							"key": "userID",
+							"value": "ad0a8306-cd09-4cac-95ba-0e198d114d55"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "TransationsWithLimit",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/v1/user/:userID/wallet/transactions?limit=1&IDBefore&createdBefore",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"v1",
+						"user",
+						":userID",
+						"wallet",
+						"transactions"
+					],
+					"query": [
+						{
+							"key": "limit",
+							"value": "1"
+						},
+						{
+							"key": "IDBefore",
+							"value": null
+						},
+						{
+							"key": "createdBefore",
+							"value": null
+						}
+					],
+					"variable": [
+						{
+							"key": "userID",
+							"value": "ad0a8306-cd09-4cac-95ba-0e198d114d55"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Deposit",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"transactionID\":\"{{$guid}}\",\r\n    \"amount\": 100\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/v1/user/:userID/wallet/deposit",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"v1",
+						"user",
+						":userID",
+						"wallet",
+						"deposit"
+					],
+					"variable": [
+						{
+							"key": "userID",
+							"value": "ad0a8306-cd09-4cac-95ba-0e198d114d55"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Withdraw",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"transactionID\":\"{{$guid}}\",\r\n    \"amount\": 100\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/v1/user/:userID/wallet/withdraw",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"v1",
+						"user",
+						":userID",
+						"wallet",
+						"withdraw"
+					],
+					"variable": [
+						{
+							"key": "userID",
+							"value": "ad0a8306-cd09-4cac-95ba-0e198d114d55"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Transfer",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"transactionID\":\"{{$guid}}\",\r\n    \"passiveUserID\": \"fec8a02a-09b2-4767-ada9-a2c10a5ba284\",\r\n    \"amount\": 100\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/v1/user/:userID/wallet/transfer",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"v1",
+						"user",
+						":userID",
+						"wallet",
+						"transfer"
+					],
+					"variable": [
+						{
+							"key": "userID",
+							"value": "ad0a8306-cd09-4cac-95ba-0e198d114d55"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "TransferBack",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"transactionID\":\"{{$guid}}\",\r\n    \"passiveUserID\": \"ad0a8306-cd09-4cac-95ba-0e198d114d55\",\r\n    \"amount\": 10\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/v1/user/:userID/wallet/transfer",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"v1",
+						"user",
+						":userID",
+						"wallet",
+						"transfer"
+					],
+					"variable": [
+						{
+							"key": "userID",
+							"value": "fec8a02a-09b2-4767-ada9-a2c10a5ba284"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

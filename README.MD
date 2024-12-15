@@ -151,6 +151,8 @@ and the server will run on port 8080
      - limit: Max number of records (default 100)
    - Returns transactions sorted by creation time
 
+## Postman Collection
+[Postman Collection](./cryptocom.postman_collection.json)
 
 # Project Structure
 * cmd/ => any executable code, like server main.go or any other executable tools
@@ -191,3 +193,6 @@ ok      github.com/sappy5678/cryptocom/pkg/utl/postgres 3.624s  coverage: 83.3% 
 ok      github.com/sappy5678/cryptocom/pkg/utl/server   0.007s  coverage: 27.8% of statements
 ok      github.com/sappy5678/cryptocom/pkg/utl/zlog     0.006s  coverage: 100.0% of statements
 ```
+
+# Total Time Used
+
