@@ -9,6 +9,7 @@ import (
 
 // New creates new wallet logging service
 func New(svc domain.WalletService, logger domain.Logger) *LogService {
+
 	return &LogService{
 		WalletService: svc,
 		logger:        logger,
@@ -35,6 +36,7 @@ func (ls *LogService) Create(c context.Context, req domain.User) (wallet *domain
 			},
 		)
 	}(time.Now())
+
 	return ls.WalletService.Create(c, req)
 }
 
@@ -49,6 +51,7 @@ func (ls *LogService) Get(c context.Context, req domain.User) (wallet *domain.Wa
 			},
 		)
 	}(time.Now())
+
 	return ls.WalletService.Get(c, req)
 }
 
@@ -63,6 +66,7 @@ func (ls *LogService) Withdraw(c context.Context, req domain.User, transactionID
 			},
 		)
 	}(time.Now())
+
 	return ls.WalletService.Withdraw(c, req, transactionID, amount)
 }
 
@@ -77,6 +81,7 @@ func (ls *LogService) Deposit(c context.Context, req domain.User, transactionID 
 			},
 		)
 	}(time.Now())
+
 	return ls.WalletService.Deposit(c, req, transactionID, amount)
 }
 
@@ -91,6 +96,7 @@ func (ls *LogService) GetTransactions(c context.Context, req domain.User, create
 			},
 		)
 	}(time.Now())
+
 	return ls.WalletService.GetTransactions(c, req, createdAt, lastReturnedID, limit)
 }
 
@@ -105,6 +111,7 @@ func (ls *LogService) Transfer(c context.Context, req domain.User, transactionID
 			},
 		)
 	}(time.Now())
+
 	return ls.WalletService.Transfer(c, req, transactionID, amount, passiveUser)
 }
 
@@ -118,5 +125,6 @@ func (ls *LogService) CreateTransactionID(c context.Context) domain.TransactionI
 			},
 		)
 	}(time.Now())
+
 	return ls.WalletService.CreateTransactionID(c)
 }

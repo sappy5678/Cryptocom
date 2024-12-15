@@ -15,24 +15,31 @@ import (
 
 var mockWalletService = &wallet.MockWalletService{
 	CreateFunc: func(ctx context.Context, user domain.User) (*domain.Wallet, error) {
+
 		return &domain.Wallet{UserID: user.ID, Balance: 0}, nil
 	},
 	GetFunc: func(ctx context.Context, user domain.User) (*domain.Wallet, error) {
+
 		return &domain.Wallet{UserID: user.ID, Balance: 0}, nil
 	},
 	WithdrawFunc: func(ctx context.Context, user domain.User, transactionID domain.TransactionID, amount int) (*domain.Wallet, error) {
+
 		return &domain.Wallet{UserID: user.ID, Balance: 0}, nil
 	},
 	DepositFunc: func(ctx context.Context, user domain.User, transactionID domain.TransactionID, amount int) (*domain.Wallet, error) {
+
 		return &domain.Wallet{UserID: user.ID, Balance: 0}, nil
 	},
 	GetTransactionsFunc: func(ctx context.Context, user domain.User, createdAt time.Time, lastReturnedID int, limit int) ([]*domain.Transaction, error) {
+
 		return []*domain.Transaction{}, nil
 	},
 	CreateTransactionIDFunc: func(ctx context.Context) domain.TransactionID {
+
 		return domain.TransactionID("test-transaction-id")
 	},
 	TransferFunc: func(ctx context.Context, user domain.User, transactionID domain.TransactionID, amount int, passiveUser domain.User) (*domain.Wallet, error) {
+
 		return &domain.Wallet{UserID: user.ID, Balance: 0}, nil
 	},
 }

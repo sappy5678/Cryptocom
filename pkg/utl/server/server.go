@@ -14,6 +14,7 @@ import (
 
 // CORS adds Cross-Origin Resource Sharing support
 func CORS() echo.MiddlewareFunc {
+
 	return middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{"*"},
 		MaxAge:           86400,
@@ -30,10 +31,12 @@ func New() *echo.Echo {
 	e.Use(middleware.Logger(), middleware.Recover(),
 		CORS())
 	e.GET("/", healthCheck)
+
 	return e
 }
 
 func healthCheck(c echo.Context) error {
+
 	return c.JSON(http.StatusOK, "OK")
 }
 

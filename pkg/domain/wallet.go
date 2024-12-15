@@ -34,9 +34,11 @@ type Transaction struct {
 type TransactionID string
 
 func (t TransactionID) ID() string {
+
 	return string(t)
 }
 func (t TransactionID) PassiveID() string {
+
 	return string(t) + "-passive"
 }
 

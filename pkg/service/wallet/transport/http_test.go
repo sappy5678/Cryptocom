@@ -609,8 +609,10 @@ func TestTransfer(t *testing.T) {
 			r := server.New()
 			rg := r.Group("v1")
 			transport.NewHTTP(tt.svc, rg)
+
 			ts := httptest.NewServer(r)
 			defer ts.Close()
+
 			path := ts.URL + "/v1/user/" + tt.userID + "/wallet/transfer"
 			reqBody, err := json.Marshal(tt.req)
 			if err != nil {

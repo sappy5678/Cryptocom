@@ -11,10 +11,12 @@ import (
 func New(psn string) (*sqlx.DB, error) {
 	db, err := sqlx.Connect("postgres", psn)
 	if err != nil {
+
 		return nil, err
 	}
 
 	if db.Ping() != nil {
+
 		return nil, err
 	}
 

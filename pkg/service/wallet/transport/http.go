@@ -63,6 +63,7 @@ func (h HTTP) create(c echo.Context) error {
 		if err != nil {
 			c.Logger().Error(err)
 		}
+
 		return err
 	}
 	r.UserID = userID
@@ -77,6 +78,7 @@ func (h HTTP) create(c echo.Context) error {
 		if err != nil {
 			c.Logger().Error(err)
 		}
+
 		return err
 	}
 
@@ -93,6 +95,7 @@ func (h HTTP) get(c echo.Context) error {
 		if err != nil {
 			c.Logger().Error(err)
 		}
+
 		return err
 	}
 
@@ -107,8 +110,10 @@ func (h HTTP) get(c echo.Context) error {
 		if err != nil {
 			c.Logger().Error(err)
 		}
+
 		return err
 	}
+
 	return c.JSON(http.StatusOK, wallet)
 }
 
@@ -118,6 +123,7 @@ type CreateTransactionIDResp struct {
 
 func (h HTTP) createTransactionID(c echo.Context) error {
 	transactionID := h.Service.CreateTransactionID(c.Request().Context())
+
 	return c.JSON(http.StatusOK, CreateTransactionIDResp{TransactionID: transactionID})
 }
 
@@ -137,6 +143,7 @@ func (h HTTP) deposit(c echo.Context) error {
 		if err != nil {
 			c.Logger().Error(err)
 		}
+
 		return err
 	}
 
@@ -147,6 +154,7 @@ func (h HTTP) deposit(c echo.Context) error {
 		if err != nil {
 			c.Logger().Error(err)
 		}
+
 		return err
 	}
 
@@ -162,8 +170,10 @@ func (h HTTP) deposit(c echo.Context) error {
 		if err != nil {
 			c.Logger().Error(err)
 		}
+
 		return err
 	}
+
 	return c.JSON(http.StatusOK, wallet)
 }
 
@@ -181,6 +191,7 @@ func (h HTTP) withdraw(c echo.Context) error {
 		if err != nil {
 			c.Logger().Error(err)
 		}
+
 		return err
 	}
 
@@ -191,6 +202,7 @@ func (h HTTP) withdraw(c echo.Context) error {
 		if err != nil {
 			c.Logger().Error(err)
 		}
+
 		return err
 	}
 
@@ -205,8 +217,10 @@ func (h HTTP) withdraw(c echo.Context) error {
 		if err != nil {
 			c.Logger().Error(err)
 		}
+
 		return err
 	}
+
 	return c.JSON(http.StatusOK, wallet)
 }
 
@@ -226,6 +240,7 @@ func (h HTTP) getTransactions(c echo.Context) error {
 		if err != nil {
 			c.Logger().Error(err)
 		}
+
 		return err
 	}
 	userID := c.Param("userID")
@@ -236,6 +251,7 @@ func (h HTTP) getTransactions(c echo.Context) error {
 		if err != nil {
 			c.Logger().Error(err)
 		}
+
 		return err
 	}
 
@@ -248,6 +264,7 @@ func (h HTTP) getTransactions(c echo.Context) error {
 			if err != nil {
 				c.Logger().Error(err)
 			}
+
 			return err
 		}
 	}
@@ -263,8 +280,10 @@ func (h HTTP) getTransactions(c echo.Context) error {
 		if err != nil {
 			c.Logger().Error(err)
 		}
+
 		return err
 	}
+
 	return c.JSON(http.StatusOK, transactions)
 }
 
@@ -283,6 +302,7 @@ func (h HTTP) transfer(c echo.Context) error {
 		if err != nil {
 			c.Logger().Error(err)
 		}
+
 		return err
 	}
 	userID := c.Param("userID")
@@ -292,6 +312,7 @@ func (h HTTP) transfer(c echo.Context) error {
 		if err != nil {
 			c.Logger().Error(err)
 		}
+
 		return err
 	}
 	r.UserID = userID
@@ -303,7 +324,9 @@ func (h HTTP) transfer(c echo.Context) error {
 		if err != nil {
 			c.Logger().Error(err)
 		}
+
 		return err
 	}
+
 	return c.JSON(http.StatusOK, wallet)
 }

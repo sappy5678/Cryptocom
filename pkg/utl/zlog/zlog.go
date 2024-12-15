@@ -15,6 +15,7 @@ type Log struct {
 // New instantiates new zero logger
 func New() *Log {
 	z := zerolog.New(os.Stdout)
+
 	return &Log{
 		logger: &z,
 	}
@@ -32,6 +33,7 @@ func (z *Log) Log(ctx context.Context, source, msg string, err error, params map
 	if err != nil {
 		params["error"] = err
 		z.logger.Error().Fields(params).Msg(msg)
+
 		return
 	}
 

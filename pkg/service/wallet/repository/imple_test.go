@@ -111,6 +111,7 @@ func (ts *TestSuite) TestCreate() {
 			got, err := wallet.Create(ctx, db, tt.user)
 			if tt.wantErr {
 				assert.Error(ts.T(), err)
+
 				return
 			}
 			assert.NoError(ts.T(), err)
@@ -157,6 +158,7 @@ func (ts *TestSuite) TestGet() {
 			got, err := wallet.Get(ctx, db, tt.user)
 			if tt.wantErr != nil {
 				assert.ErrorIs(ts.T(), err, tt.wantErr)
+
 				return
 			}
 			assert.NoError(ts.T(), err)
@@ -247,6 +249,7 @@ func (ts *TestSuite) TestDeposit() {
 			got, err := wallet.Deposit(ctx, db, mockNow, tt.user, tt.transactionID, tt.amount)
 			if tt.wantErr != nil {
 				assert.ErrorIs(ts.T(), err, tt.wantErr)
+
 				return
 			}
 			assert.NoError(ts.T(), err)
@@ -368,6 +371,7 @@ func (ts *TestSuite) TestWithdraw() {
 			got, err := wallet.Withdraw(ctx, db, mockNow, tt.user, tt.transactionID, tt.amount)
 			if tt.wantErr != nil {
 				assert.ErrorIs(ts.T(), err, tt.wantErr)
+
 				return
 			}
 			assert.NoError(ts.T(), err)
@@ -605,6 +609,7 @@ func (ts *TestSuite) TestTransfer() {
 			got, err := wallet.Transfer(ctx, db, mockNow, tt.user, tt.transactionID, tt.amount, tt.passiveUser)
 			if tt.wantErr != nil {
 				assert.ErrorIs(ts.T(), err, tt.wantErr)
+
 				return
 			}
 			assert.NoError(ts.T(), err)
@@ -802,6 +807,7 @@ func (ts *TestSuite) TestGetTransactions() {
 			got, err := wallet.GetTransactions(ctx, db, tt.user, tt.from, tt.lastID, tt.limit)
 			if tt.wantErr != nil {
 				assert.ErrorIs(ts.T(), err, tt.wantErr, tt.name+": error is not equal")
+
 				return
 			}
 			assert.NoError(ts.T(), err, tt.name+": error is not nil")

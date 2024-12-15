@@ -49,6 +49,7 @@ import (
 func Start(cfg *config.Configuration) error {
 	db, err := postgres.New(os.Getenv("DATABASE_URL"))
 	if err != nil {
+
 		return err
 	}
 
@@ -59,6 +60,7 @@ func Start(cfg *config.Configuration) error {
 	wt.NewHTTP(wl.New(wallet.Initialize(db), log), v1)
 
 	v1.GET("/health", func(c echo.Context) error {
+
 		return c.NoContent(http.StatusOK)
 	})
 	server.Start(e, &server.Config{

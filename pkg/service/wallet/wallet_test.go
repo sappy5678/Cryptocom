@@ -17,42 +17,54 @@ import (
 
 var mockWalletRepository = &repository.MockWalletRepository{
 	CreateFunc: func(ctx context.Context, db *sqlx.DB, user domain.User) (*domain.Wallet, error) {
+
 		return &domain.Wallet{UserID: "1"}, nil
 	},
 	GetFunc: func(ctx context.Context, db *sqlx.DB, user domain.User) (*domain.Wallet, error) {
+
 		return &domain.Wallet{UserID: "1"}, nil
 	},
 	WithdrawFunc: func(ctx context.Context, db *sqlx.DB, time time.Time, user domain.User, transactionID domain.TransactionID, amount int) (*domain.Wallet, error) {
+
 		return &domain.Wallet{UserID: "1"}, nil
 	},
 	DepositFunc: func(ctx context.Context, db *sqlx.DB, time time.Time, user domain.User, transactionID domain.TransactionID, amount int) (*domain.Wallet, error) {
+
 		return &domain.Wallet{UserID: "1"}, nil
 	},
 	GetTransactionsFunc: func(ctx context.Context, db *sqlx.DB, user domain.User, createdBefore time.Time, IDBefore int, limit int) ([]*domain.Transaction, error) {
+
 		return []*domain.Transaction{{UserID: "1"}}, nil
 	},
 	TransferFunc: func(ctx context.Context, db *sqlx.DB, time time.Time, user domain.User, transactionID domain.TransactionID, amount int, passiveUser domain.User) (*domain.Wallet, error) {
+
 		return &domain.Wallet{UserID: "1"}, nil
 	},
 }
 
 var mockErrorWalletRepository = &repository.MockWalletRepository{
 	CreateFunc: func(ctx context.Context, db *sqlx.DB, user domain.User) (*domain.Wallet, error) {
+
 		return nil, errors.New("error")
 	},
 	GetFunc: func(ctx context.Context, db *sqlx.DB, user domain.User) (*domain.Wallet, error) {
+
 		return nil, errors.New("error")
 	},
 	WithdrawFunc: func(ctx context.Context, db *sqlx.DB, time time.Time, user domain.User, transactionID domain.TransactionID, amount int) (*domain.Wallet, error) {
+
 		return nil, errors.New("error")
 	},
 	DepositFunc: func(ctx context.Context, db *sqlx.DB, time time.Time, user domain.User, transactionID domain.TransactionID, amount int) (*domain.Wallet, error) {
+
 		return nil, errors.New("error")
 	},
 	GetTransactionsFunc: func(ctx context.Context, db *sqlx.DB, user domain.User, createdBefore time.Time, IDBefore int, limit int) ([]*domain.Transaction, error) {
+
 		return nil, errors.New("error")
 	},
 	TransferFunc: func(ctx context.Context, db *sqlx.DB, time time.Time, user domain.User, transactionID domain.TransactionID, amount int, passiveUser domain.User) (*domain.Wallet, error) {
+
 		return nil, errors.New("error")
 	},
 }

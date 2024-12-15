@@ -11,11 +11,13 @@ import (
 
 // New creates new wallet application service
 func New(db *sqlx.DB, walletRepo repository.WalletRepository) domain.WalletService {
+
 	return &Wallet{db: db, walletRepo: walletRepo}
 }
 
 // Initialize initalizes Wallet application service with defaults
 func Initialize(db *sqlx.DB) domain.WalletService {
+
 	return New(db, &repository.Wallet{})
 }
 

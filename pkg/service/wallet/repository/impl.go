@@ -32,8 +32,10 @@ const existsQuery = `SELECT EXISTS(SELECT 1 FROM UserWallet WHERE userID = $1)`
 func (w *Wallet) Exists(ctx context.Context, db *sqlx.DB, user domain.User) (bool, error) {
 	var exists bool
 	if err := db.GetContext(ctx, &exists, existsQuery, user.ID); err != nil {
+
 		return false, err
 	}
+
 	return exists, nil
 }
 
@@ -42,8 +44,10 @@ const existsTransactionIDQuery = `SELECT EXISTS(SELECT 1 FROM UserWalletTransact
 func (w *Wallet) ExistsTransactionID(ctx context.Context, db *sqlx.DB, transactionID domain.TransactionID) (bool, error) {
 	var exists bool
 	if err := db.GetContext(ctx, &exists, existsTransactionIDQuery, transactionID.ID()); err != nil {
+
 		return false, err
 	}
+
 	return exists, nil
 }
 
@@ -57,13 +61,16 @@ func (w *Wallet) Create(ctx context.Context, db *sqlx.DB, user domain.User) (*do
 	}
 
 	if exists, err := w.Exists(ctx, db, user); err != nil {
+
 		return nil, err
 	} else if exists {
 		wallet, err := w.Get(ctx, db, user)
+
 		return wallet, err
 	}
 
 	if _, err := db.ExecContext(ctx, createWalletQuery, wallet.UserID, wallet.Balance); err != nil {
+
 		return nil, err
 	}
 
@@ -76,14 +83,18 @@ func (w *Wallet) Get(ctx context.Context, db *sqlx.DB, user domain.User) (*domai
 	wallet := domain.Wallet{}
 
 	if exists, err := w.Exists(ctx, db, user); err != nil {
+
 		return nil, err
 	} else if !exists {
+
 		return nil, domain.ErrWalletNotFound
 	}
 
 	if err := db.GetContext(ctx, &wallet, getWalletQuery, user.ID); err != nil {
+
 		return nil, err
 	}
+
 	return &wallet, nil
 }
 
@@ -92,13 +103,16 @@ const insertTransactionQuery = `INSERT INTO UserWalletTransaction (userID, trans
 
 func (w *Wallet) Deposit(ctx context.Context, db *sqlx.DB, now time.Time, user domain.User, transactionID domain.TransactionID, amount int) (*domain.Wallet, error) {
 	if amount <= 0 {
+
 		return nil, domain.ErrInvalidAmount
 	}
 
 	// idempotent
 	if exists, err := w.ExistsTransactionID(ctx, db, transactionID); err != nil {
+
 		return nil, err
 	} else if exists {
+
 		return w.Get(ctx, db, user)
 	}
 
@@ -106,6 +120,7 @@ func (w *Wallet) Deposit(ctx context.Context, db *sqlx.DB, now time.Time, user d
 
 	tx, err := db.BeginTxx(ctx, nil)
 	if err != nil {
+
 		return nil, err
 	}
 	defer tx.Rollback()
@@ -113,15 +128,18 @@ func (w *Wallet) Deposit(ctx context.Context, db *sqlx.DB, now time.Time, user d
 	// update wallet balance and get the new balance
 	rows, err := tx.QueryxContext(ctx, depositQuery, user.ID, amount)
 	if err != nil {
+
 		return nil, err
 	}
 	defer rows.Close()
 
 	var wallet domain.Wallet
 	if !rows.Next() {
+
 		return nil, domain.ErrWalletNotFound
 	}
 	if err := rows.StructScan(&wallet); err != nil {
+
 		return nil, err
 	}
 	rows.Close()
@@ -129,9 +147,11 @@ func (w *Wallet) Deposit(ctx context.Context, db *sqlx.DB, now time.Time, user d
 	// insert transaction
 	_, err = tx.ExecContext(ctx, insertTransactionQuery, user.ID, transactionID.ID(), domain.OperationTypeDeposit, amount, "", now)
 	if err != nil {
+
 		return nil, err
 	}
 	if err := tx.Commit(); err != nil {
+
 		return nil, err
 	}
 
@@ -143,18 +163,23 @@ const withdrawQuery = `UPDATE UserWallet SET balance = balance - $2 WHERE userID
 func (w *Wallet) Withdraw(ctx context.Context, db *sqlx.DB, now time.Time, user domain.User, transactionID domain.TransactionID, amount int) (*domain.Wallet, error) {
 	// check condition
 	if amount <= 0 {
+
 		return nil, domain.ErrInvalidAmount
 	}
 	if exists, err := w.Exists(ctx, db, user); err != nil {
+
 		return nil, err
 	} else if !exists {
+
 		return nil, domain.ErrWalletNotFound
 	}
 
 	// idempotent
 	if exists, err := w.ExistsTransactionID(ctx, db, transactionID); err != nil {
+
 		return nil, err
 	} else if exists {
+
 		return w.Get(ctx, db, user)
 	}
 
@@ -163,6 +188,7 @@ func (w *Wallet) Withdraw(ctx context.Context, db *sqlx.DB, now time.Time, user 
 	// start transaction
 	tx, err := db.BeginTxx(ctx, nil)
 	if err != nil {
+
 		return nil, err
 	}
 	defer tx.Rollback()
@@ -170,15 +196,18 @@ func (w *Wallet) Withdraw(ctx context.Context, db *sqlx.DB, now time.Time, user 
 	// update wallet balance and get the new balance
 	rows, err := tx.QueryxContext(ctx, withdrawQuery, user.ID, amount)
 	if err != nil {
+
 		return nil, err
 	}
 	defer rows.Close()
 
 	var wallet domain.Wallet
 	if !rows.Next() {
+
 		return nil, domain.ErrNotEnoughBalance
 	}
 	if err := rows.StructScan(&wallet); err != nil {
+
 		return nil, err
 	}
 	rows.Close()
@@ -186,10 +215,12 @@ func (w *Wallet) Withdraw(ctx context.Context, db *sqlx.DB, now time.Time, user 
 	// insert transaction
 	_, err = tx.ExecContext(ctx, insertTransactionQuery, user.ID, transactionID.ID(), domain.OperationTypeWithdraw, amount, "", now)
 	if err != nil {
+
 		return nil, err
 	}
 
 	if err := tx.Commit(); err != nil {
+
 		return nil, err
 	}
 
@@ -202,26 +233,34 @@ const passiveTransferQuery = `UPDATE UserWallet SET balance = balance + $2 WHERE
 func (w *Wallet) Transfer(ctx context.Context, db *sqlx.DB, now time.Time, user domain.User, transactionID domain.TransactionID, amount int, passiveUser domain.User) (*domain.Wallet, error) {
 	// check condition
 	if amount <= 0 {
+
 		return nil, domain.ErrInvalidAmount
 	}
 	if user.ID == passiveUser.ID {
+
 		return nil, domain.ErrTransferToSelf
 	}
 	if exists, err := w.Exists(ctx, db, user); err != nil {
+
 		return nil, err
 	} else if !exists {
+
 		return nil, domain.ErrWalletNotFound
 	}
 	if exists, err := w.Exists(ctx, db, passiveUser); err != nil {
+
 		return nil, err
 	} else if !exists {
+
 		return nil, domain.ErrWalletNotFound
 	}
 
 	// idempotent
 	if exists, err := w.ExistsTransactionID(ctx, db, transactionID); err != nil {
+
 		return nil, err
 	} else if exists {
+
 		return w.Get(ctx, db, user)
 	}
 
@@ -230,6 +269,7 @@ func (w *Wallet) Transfer(ctx context.Context, db *sqlx.DB, now time.Time, user 
 	// start transaction
 	tx, err := db.BeginTxx(ctx, nil)
 	if err != nil {
+
 		return nil, err
 	}
 	defer tx.Rollback()
@@ -237,13 +277,16 @@ func (w *Wallet) Transfer(ctx context.Context, db *sqlx.DB, now time.Time, user 
 	// update wallet balance and get the new balance
 	rows, err := tx.QueryxContext(ctx, withdrawQuery, user.ID, amount)
 	if err != nil {
+
 		return nil, err
 	}
 	if !rows.Next() {
+
 		return nil, domain.ErrNotEnoughBalance
 	}
 	var wallet domain.Wallet
 	if err := rows.StructScan(&wallet); err != nil {
+
 		return nil, err
 	}
 	rows.Close()
@@ -251,9 +294,11 @@ func (w *Wallet) Transfer(ctx context.Context, db *sqlx.DB, now time.Time, user 
 	// update passive wallet balance
 	affected, err := tx.ExecContext(ctx, passiveTransferQuery, passiveUser.ID, amount)
 	if err != nil {
+
 		return nil, err
 	}
 	if _, err := affected.RowsAffected(); err != nil {
+
 		return nil, err
 	}
 
@@ -261,6 +306,7 @@ func (w *Wallet) Transfer(ctx context.Context, db *sqlx.DB, now time.Time, user 
 	_, err = tx.ExecContext(ctx, insertTransactionQuery, user.ID, transactionID.ID(),
 		domain.OperationTypeTransferOut, amount, passiveUser.ID, now)
 	if err != nil {
+
 		return nil, err
 	}
 
@@ -268,9 +314,11 @@ func (w *Wallet) Transfer(ctx context.Context, db *sqlx.DB, now time.Time, user 
 	_, err = tx.ExecContext(ctx, insertTransactionQuery, passiveUser.ID, transactionID.PassiveID(),
 		domain.OperationTypeTransferIn, amount, user.ID, now)
 	if err != nil {
+
 		return nil, err
 	}
 	if err := tx.Commit(); err != nil {
+
 		return nil, err
 	}
 
@@ -293,14 +341,17 @@ func (w *Wallet) GetTransactions(ctx context.Context, db *sqlx.DB, user domain.U
 		limit = 100
 	}
 	if exists, err := w.Exists(ctx, db, user); err != nil {
+
 		return nil, err
 	} else if !exists {
+
 		return nil, domain.ErrWalletNotFound
 	}
 	transactions := []*domain.Transaction{}
 
 	if err := db.SelectContext(ctx, &transactions, getTransactionsQuery, user.ID, createdBefore,
 		IDBefore, limit); err != nil {
+
 		return nil, err
 	}
 
@@ -308,5 +359,6 @@ func (w *Wallet) GetTransactions(ctx context.Context, db *sqlx.DB, user domain.U
 	for _, transaction := range transactions {
 		transaction.CreatedAt = TimeToUTC(transaction.CreatedAt)
 	}
+
 	return transactions, nil
 }
