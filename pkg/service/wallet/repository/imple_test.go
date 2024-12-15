@@ -42,8 +42,7 @@ func (ts *TestSuite) SetupSuite() {
 	assert.NoError(ts.T(), err)
 	ts.dbConnection = sqlx.MustConnect("postgres", "postgres://postgres:password@localhost:3000/postgres?sslmode=disable")
 	ts.dbConnection.Exec("CREATE DATABASE cryptocom;")
-	err = ts.dbConnection.Close()
-	assert.NoError(ts.T(), err)
+	assert.NoError(ts.T(), ts.dbConnection.Close())
 	ts.dbConnection = sqlx.MustConnect("postgres", "postgres://postgres:password@localhost:3000/cryptocom?sslmode=disable")
 	ts.driver, err = postgres.WithInstance(ts.dbConnection.DB, &postgres.Config{})
 	assert.NoError(ts.T(), err)
@@ -65,12 +64,11 @@ func (ts *TestSuite) TearDownTest() {
 func (ts *TestSuite) TearDownSuite() {
 	err := ts.dbConnection.Close()
 	assert.NoError(ts.T(), err)
-	err = ts.pgdb.Stop()
-	assert.NoError(ts.T(), err)
 	err1, err2 := ts.migrate.Close()
 	assert.NoError(ts.T(), err1)
 	assert.NoError(ts.T(), err2)
 	assert.NoError(ts.T(), ts.dbConnection.Close())
+	assert.NoError(ts.T(), ts.pgdb.Stop())
 }
 
 func (ts *TestSuite) TestCreate() {
