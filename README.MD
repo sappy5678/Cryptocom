@@ -71,8 +71,10 @@ and the server will run on port 8080
    - Consistent wallet balances
    - No lost or duplicate transactions
 5. Simplify API Design
-   - Use POST for all write operations
+   - Use PUT for all idempotent write operations
    - Use GET for read operations
+   - Use POST for non-idempotent write operations
+   - We should implement authorization in the real world, but it is not in this demo
 
 ## API Design
 1. Create Wallet
@@ -99,6 +101,7 @@ and the server will run on port 8080
    - Ensures idempotency and prevents duplicate transactions
    - We can also put transaction validation logic here, and return hash as transactionID
      - And when transactionID is used, we can use it to validate the transaction in middleware
+     - But for simplicity, we don't do that in this demo
 4. Deposit
    - PUT /api/v1/users/{userID}/wallet/deposit
    - Deposits funds into user's wallet
