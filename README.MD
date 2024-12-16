@@ -152,7 +152,7 @@ and the server will run on port 8080
    - Returns transactions sorted by creation time
 
 ## Postman Collection
-[Postman Collection](./cryptocom.postman_collection.json)
+[Postman Collection](./Cryptocom.postman_collection.json)
 
 # Project Structure
 * cmd/ => any executable code, like server main.go or any other executable tools
