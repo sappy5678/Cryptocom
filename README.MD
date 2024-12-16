@@ -1,8 +1,9 @@
 
 # How to run
+At repo root folder, run the following command to start the server
 
 ```
-docker compose up --build -d
+docker compose -f Docker-Compose.yml up --build
 ```
 and the server will run on port 8080
 
@@ -96,6 +97,8 @@ and the server will run on port 8080
    - Must obtain transactionID before any write operation
    - Each transactionID can only be used once
    - Ensures idempotency and prevents duplicate transactions
+   - We can also put transaction validation logic here, and return hash as transactionID
+     - And when transactionID is used, we can use it to validate the transaction in middleware
 4. Deposit
    - PUT /api/v1/users/{userID}/wallet/deposit
    - Deposits funds into user's wallet
@@ -146,10 +149,10 @@ and the server will run on port 8080
    - Use pagination for efficient large data retrieval
    - User can query with time
    - Query parameters:
-     - createdBefore: RFC3339 timestamp
-     - IDBefore: Transaction ID for pagination
-     - limit: Max number of records (default 100)
-   - Returns transactions sorted by creation time
+     - createdBefore (optional, RFC3339 timestamp string): RFC3339 timestamp, like `2024-12-16T03:59:02.608558Z`
+     - IDBefore (optional, int): Transaction ID for pagination
+     - limit (optional, int): Max number of records (default 100)
+   - Returns transactions sorted by creation time descending
 
 ## Postman Collection
 [Postman Collection](./Cryptocom.postman_collection.json)
